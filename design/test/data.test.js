@@ -292,12 +292,39 @@ test('every stat is non-decreasing across an evolution', () => {
   }
 });
 
-test('an evolution never adds or drops a type: the starters stay mono', () => {
+test('an evolution keeps its primary type and never loses a type', () => {
+  // A line's identity is its first type; a second type may be gained on
+  // evolving (all three starters gain one at final stage) but nothing is ever
+  // dropped or swapped out from under the player.
   for (const m of M.MONS) {
     if (!m.engine.evolvesInto) continue;
     const next = M.monById(m.engine.evolvesInto.id);
-    assert.deepEqual(M.typesOf(next), M.typesOf(m),
-      `${m.engine.name} -> ${next.engine.name} changes typing`);
+    assert.equal(next.engine.type1, m.engine.type1,
+      `${m.engine.name} -> ${next.engine.name} changes its primary type`);
+    for (const t of M.typesOf(m)) {
+      assert.ok(M.typesOf(next).includes(t),
+        `${next.engine.name} lost the ${t} type it had as ${m.engine.name}`);
+    }
+  }
+});
+
+test('only a final stage is dual-typed', () => {
+  for (const m of M.MONS) {
+    if (m.engine.type2 === null) continue;
+    assert.equal(m.engine.stage, 'final',
+      `${m.engine.name} is dual-typed at the ${m.engine.stage} stage`);
+  }
+});
+
+test('a dual-typed final stage really does trade STAB for coverage', () => {
+  for (const m of M.MONS.filter((x) => x.engine.type2)) {
+    const types = M.typesOf(m);
+    assert.equal(M.stab(types[0], types), 1.25);
+    assert.equal(M.stab(types[1], types), 1.25);
+    // strictly worse on its original type than its own pre-evolution was
+    const prev = M.monById(m.engine.evolvesFrom.id);
+    assert.ok(M.stab(types[0], types) < M.stab(types[0], M.typesOf(prev)),
+      `${m.engine.name} should lose peak STAB on ${types[0]} in exchange for coverage`);
   }
 });
 

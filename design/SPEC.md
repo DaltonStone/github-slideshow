@@ -163,13 +163,28 @@ more, and an underlevelled mon with a type advantage stays relevant.
 
 ## 6. Starters
 
-Mono-type, and they **stay mono-type through evolution**.
+Each starter begins **mono-type** and **gains a second type at its final stage**.
+The first type never changes, so the line keeps its identity; the second is what
+the creature has turned into by growing up.
 
 | ID | Name | Type | HP | ATK | DEF | SpA | SpD | SPD | Total |
 |---|---|---|---|---|---|---|---|---|---|
 | #001 | Emberkit | Fire  | 15 | 22 | 13 | 15 | 13 | 27 | 105 |
 | #002 | Rillet   | Water | 18 | 15 | 17 | 20 | 20 | 15 | 105 |
 | #003 | Loambit  | Earth | 22 | 23 | 22 | 10 | 15 | 13 | 105 |
+
+Their lines:
+
+| Line | Basic | Evolved | Final |
+|---|---|---|---|
+| Fire  | Emberkit `Fire` | Cindermaw `Fire` | Pyrelash **`Fire/Phantom`** |
+| Water | Rillet `Water` | Tidecalf `Water` | Brinemoor **`Water/Psychic`** |
+| Earth | Loambit `Earth` | Cragmole `Earth` | Terrabulk **`Earth/Steel`** |
+
+The second type is not free. A final stage trades mono-type STAB (1.5x on one
+type) for dual STAB (1.25x on two), and picks up the second type's weaknesses
+additively. See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §1.5 for what this does
+to the starter triangle — it is currently **not** a clean cycle at final stage.
 
 Names are working titles (§ [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §4). The
 three starters sit on the elemental cycle, so the choice is a real

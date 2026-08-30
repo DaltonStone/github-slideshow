@@ -92,6 +92,42 @@ const topHp = Math.max(...finals.map((m) => m.engine.stats.hp));
 console.log(`\nhighest final-stage ATK base in roster: ${topAtk} -> ${M.statAt(topAtk, 99)} at L99`);
 console.log(`highest final-stage HP  base in roster: ${topHp} -> ${M.hpAt(topHp, 99)} at L99`);
 
+// --- starter triangle -------------------------------------------------------
+
+rule('STARTER TRIANGLE AT FINAL STAGE');
+const starters = [1, 2, 3].map((id) => M.evolutionLine(id));
+const trio = starters.map((line) => line[line.length - 1]);
+
+for (const f of trio) {
+  const t = M.typesOf(f);
+  const m = M.matchups(t);
+  const at = (v) => M.TYPES.filter((a) => m[a] === v);
+  console.log(`\n${f.engine.name} (${t.join('/')})`);
+  for (const v of [3, 2, 1.5, 1, 0.5, 0.25, 0]) {
+    const list = at(v);
+    if (list.length) console.log(`  ${pad(v + 'x', 6)} ${list.join(', ')}`);
+  }
+}
+
+console.log('\nbest each can do to each, using only its own STAB types:');
+let cyclic = true;
+for (const a of trio) {
+  for (const d of trio) {
+    if (a === d) continue;
+    const best = M.typesOf(a)
+      .map((t) => [t, M.effectiveness(t, M.typesOf(d))])
+      .sort((x, y) => y[1] - x[1])[0];
+    console.log(`  ${pad(a.engine.name, 11)} -> ${pad(d.engine.name, 11)} ${best[1]}x via ${best[0]}`);
+  }
+}
+// a clean cycle means each beats exactly one of the other two
+for (const a of trio) {
+  const beats = finals.filter((d) => d !== a &&
+    Math.max(...M.typesOf(a).map((t) => M.effectiveness(t, M.typesOf(d)))) > 1).length;
+  if (beats !== 1) cyclic = false;
+}
+console.log(`\n  cycle intact: ${cyclic ? 'yes' : 'NO -- see OPEN_QUESTIONS.md section 1.5'}`);
+
 // --- roster -----------------------------------------------------------------
 
 rule('ROSTER');

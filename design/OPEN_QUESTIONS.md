@@ -60,6 +60,80 @@ here, but Dark/Light are the two types most likely to over-select on a
 competitive roster, and they are the two cheapest places to add a weakness if
 one is needed.
 
+### 1.5 The starter triangle is broken at final stage — needs a decision
+
+The starters now gain a second type when they evolve:
+
+| Line | Basic | Evolved | Final |
+|---|---|---|---|
+| Fire  | Emberkit | Cindermaw | Pyrelash **Fire/Phantom** |
+| Water | Rillet | Tidecalf | Brinemoor **Water/Psychic** |
+| Earth | Loambit | Cragmole | Terrabulk **Earth/Steel** |
+
+At basic and evolved stage this is the clean Water → Fire → Earth → Water cycle.
+At final stage it is not a cycle at all. Simulated at L50 with a 60-power STAB
+move, each using its own better offensive stat:
+
+| Matchup | Hits to KO | Winner |
+|---|---|---|
+| Pyrelash vs Brinemoor | 2 vs 2 | **Pyrelash** — tied on damage, and it is twice as fast (116 vs 57) |
+| Brinemoor vs Terrabulk | 3 vs 2 | Terrabulk |
+| Terrabulk vs Pyrelash | 5 vs 2 | **Pyrelash** |
+
+**Pyrelash beats both of the others.** Two separate causes:
+
+1. **Phantom hits Psychic for 2×.** So the Fire starter's second type happens to
+   be super-effective against the Water starter's second type, cancelling the
+   Water-beats-Fire leg of the cycle.
+2. **Earth/Steel is the only dual typing in the entire game that Fire hits for
+   3.0×** — Fire is 2× against both halves, so they stack. Meanwhile Terrabulk's
+   own two types are *both* resisted by Fire/Phantom, so the best it can manage
+   back is 0.5×. That is a 6× swing, and it is between two starters.
+
+#### The cheapest fix: Water/Psychic → **Water/Light**
+
+One type swap. Phantom is neutral into Light, so cause (1) disappears and the
+cycle comes back:
+
+| Matchup | Hits to KO | Winner |
+|---|---|---|
+| Pyrelash vs Brinemoor | 3 vs 2 | Brinemoor ✓ |
+| Brinemoor vs Terrabulk | 3 vs 2 | Terrabulk ✓ |
+| Terrabulk vs Pyrelash | 5 vs 2 | Pyrelash ✓ |
+
+Water → Fire → Earth → Water, restored. Light also suits Brinemoor better than
+Psychic does: §7 gives Light "max SpD, healer/support", and Brinemoor already
+runs Tidewater and Steady. Its defensive spread becomes 2× to Earth/Psychic/Dragon
+and 0.5× to five types — bulky without being oppressive.
+
+#### Cause (2) is separate and survives the fix
+
+Even with the cycle restored, Fire beats Earth at 3.0× while the other two legs
+are 2.0×, and Terrabulk can only answer at 0.5×. Two mitigations, both of which
+the design already half-contains:
+
+- **Bedrock** ("cannot be KO'd from full HP in one hit; survives at 1") is
+  precisely the insurance a 3× weakness needs, and is already in Terrabulk's
+  ability pool. Making it the default active ability turns the matchup from
+  "deleted" into "very bad".
+- **Terrabulk's offence is the real problem, and it is a movepool problem.** A
+  Water-type coverage move reaches Fire/Phantom for 2×. Move pools are unwritten
+  anyway, so this costs nothing to fix later.
+
+#### Other options considered
+
+| Option | Effect |
+|---|---|
+| Fire/Phantom → **Fire/Light** | Also restores the cycle, but loses the ghost-fire concept, which looks like the more interesting design. |
+| Earth/Steel → **Earth/Dragon** | Makes all three legs a clean symmetric 2×, and Terrabulk resists three types at 0.25×. But Dragon is meant to be rare, and Steel fits the "smelted, not gathered" flavour. |
+| Accept a strict power ranking | Defensible — plenty of games do not keep a final-stage cycle. But a 6× swing between two starters is a lot to hand the player at character-select. |
+
+**Recommendation: Water/Light, plus Bedrock as Terrabulk's default.** It is one
+field in `data/mons.json` and it is reversible.
+
+Note this whole analysis depends on the physical/special split, which the spec
+still never states (§2). If special moves do not use SpA/SpD, these numbers change.
+
 ### 1.4 The 3.0× ceiling is rare, and that is working
 
 Across all 450 attacker × dual-type combinations, exactly 15 reach 3.0×
@@ -170,3 +244,5 @@ Recorded here so they are visible rather than buried in the data:
 6. Do all 60 base creatures use the 105/135/170 budgets, or do single-stage and
    two-stage lines get different totals? Right now a one-stage mon would be
    stuck at 105 forever.
+7. Water/Psychic or Water/Light for Brinemoor? The current typing means the Fire
+   starter beats both of the others. (§1.5)

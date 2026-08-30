@@ -541,7 +541,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
 
   var monOpts = MONS.map(function (m) {
     return '<option value="' + m.engine.id + '">' + m.engine.name +
-           ' · ' + m.engine.type1 + '</option>';
+           ' · ' + typesOf(m).join('/') + '</option>';
   }).join('');
   $('atk').innerHTML = monOpts;
   $('def').innerHTML = monOpts;
@@ -589,7 +589,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
     if (!c) return;
     $('mt').value = c.dataset.a;
     // pick the first roster mon of the clicked defending type, if there is one
-    var match = MONS.filter(function (m) { return m.engine.type1 === c.dataset.d; })[0];
+    var match = MONS.filter(function (m) { return typesOf(m).indexOf(c.dataset.d) !== -1; })[0];
     if (match) $('def').value = match.engine.id;
     render();
   });

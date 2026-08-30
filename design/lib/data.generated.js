@@ -469,7 +469,7 @@ export const monData = {
         "id": 5,
         "name": "Pyrelash",
         "type1": "Fire",
-        "type2": null,
+        "type2": "Phantom",
         "origin": "Natural",
         "body": "Shoulder-height, whip-tailed. Leaves a standing line of heat behind a charge.",
         "stage": "final",
@@ -518,7 +518,7 @@ export const monData = {
           "kind": "birth-group",
           "value": "Breeding pairs hold a burn scar between them for as long as it stays open ground."
         },
-        "evolutionNotes": "Final stage of the Fire starter line. Stays mono-Fire, as all three starter lines do."
+        "evolutionNotes": "Final stage of the Fire starter line. Gains Phantom: what the line spent two stages swallowing does not stay wholly in the body. The standing line of heat behind a charge is the visible part of it."
       },
       "misc": {
         "genderRatio": {
@@ -665,7 +665,7 @@ export const monData = {
         "id": 7,
         "name": "Brinemoor",
         "type1": "Water",
-        "type2": null,
+        "type2": "Psychic",
         "origin": "Natural",
         "body": "Bulk of a small boat. Carries a standing swell around itself in still water.",
         "stage": "final",
@@ -714,7 +714,7 @@ export const monData = {
           "kind": "birth-group",
           "value": "Pairs hold a stretch of coast for life and tolerate juveniles of any line within it."
         },
-        "evolutionNotes": "Final stage of the Water starter line. Stays mono-Water."
+        "evolutionNotes": "Final stage of the Water starter line. Gains Psychic: the call a Tidecalf uses to agree a boundary becomes, at this size, something closer to a conversation held across open water."
       },
       "misc": {
         "genderRatio": {
@@ -861,7 +861,7 @@ export const monData = {
         "id": 9,
         "name": "Terrabulk",
         "type1": "Earth",
-        "type2": null,
+        "type2": "Steel",
         "origin": "Natural",
         "body": "Shoulder-height and twice as long. Carries a course of set stone across its back.",
         "stage": "final",
@@ -910,7 +910,7 @@ export const monData = {
           "kind": "birth-group",
           "value": "Solitary. Meets others only to breed, and returns to its own workings after."
         },
-        "evolutionNotes": "Final stage of the Earth starter line. Stays mono-Earth."
+        "evolutionNotes": "Final stage of the Earth starter line. Gains Steel: the course of stone it sets across its back is smelted, not gathered. It is the only thing in the line that makes rather than moves material."
       },
       "misc": {
         "genderRatio": {
