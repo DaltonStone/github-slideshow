@@ -1,0 +1,1957 @@
+<title>MONS Combat Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground:      #f4f6f7;
+  --panel:       #ffffff;
+  --panel-sunk:  #eceff1;
+  --line:        #d5dbdf;
+  --line-strong: #b3bcc3;
+  --ink:         #14181b;
+  --ink-2:       #4d585f;
+  --ink-3:       #77838b;
+  --accent:      #5b46c9;
+  --accent-soft: #ece9fb;
+
+  /* Diverging effectiveness scale: cool = resisted, neutral = normal,
+     warm = effective. Immune is off-scale and gets its own dark slate. */
+  --eff-0:    #2b3440;
+  --eff-0-ink:#e8edf1;
+  --eff-025:  #b3cfe9;
+  --eff-05:   #dce9f6;
+  --eff-1:    #ececea;
+  --eff-15:   #f9e2da;
+  --eff-2:    #f2b9a4;
+  --eff-3:    #e89478;
+  --eff-ink:  #14181b;
+
+  --good: #0ca30c;
+  --warn: #b8791a;
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:      #101315;
+    --panel:       #191d20;
+    --panel-sunk:  #14181a;
+    --line:        #2b3237;
+    --line-strong: #3d464c;
+    --ink:         #eef2f4;
+    --ink-2:       #a6b1b8;
+    --ink-3:       #77838b;
+    --accent:      #a99bf5;
+    --accent-soft: #262046;
+
+    --eff-0:    #12181f;
+    --eff-0-ink:#8794a1;
+    --eff-025:  #27527f;
+    --eff-05:   #1c2c3d;
+    --eff-1:    #34383b;
+    --eff-15:   #4a2f28;
+    --eff-2:    #7a4132;
+    --eff-3:    #b0503a;
+    --eff-ink:  #f2f5f7;
+
+    --good: #38c738;
+    --warn: #e0a537;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:      #101315;
+  --panel:       #191d20;
+  --panel-sunk:  #14181a;
+  --line:        #2b3237;
+  --line-strong: #3d464c;
+  --ink:         #eef2f4;
+  --ink-2:       #a6b1b8;
+  --ink-3:       #77838b;
+  --accent:      #a99bf5;
+  --accent-soft: #262046;
+
+  --eff-0:    #12181f;
+  --eff-0-ink:#8794a1;
+  --eff-025:  #27527f;
+  --eff-05:   #1c2c3d;
+  --eff-1:    #34383b;
+  --eff-15:   #4a2f28;
+  --eff-2:    #7a4132;
+  --eff-3:    #b0503a;
+  --eff-ink:  #f2f5f7;
+
+  --good: #38c738;
+  --warn: #e0a537;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Chivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 4.6vw, 46px);
+  font-weight: 900;
+  letter-spacing: -.025em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.standfirst {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--ink-2);
+  font-size: 16px;
+}
+.standfirst strong { color: var(--ink); font-weight: 700; }
+
+/* ---------- panels ---------- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.panel-note { margin: 0; font-size: 13px; color: var(--ink-3); max-width: 58ch; }
+
+/* ---------- controls ---------- */
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+label.cap {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+select, input[type="number"] {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--panel-sunk);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 8px 9px;
+  width: 100%;
+  min-width: 0;
+}
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0; }
+select:focus-visible, input:focus-visible, button:focus-visible, .cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.toggles { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.toggle {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 13px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-sunk);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.toggle[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ---------- readout ---------- */
+
+.readout {
+  display: grid;
+  grid-template-columns: minmax(190px, 250px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.hero {
+  background: var(--panel-sunk);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hero-num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 58px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-label {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hero-sub { font-size: 14px; color: var(--ink-2); margin-top: 7px; }
+.hero-sub b { color: var(--ink); font-weight: 700; }
+
+/* multiplier chain */
+.chain { display: flex; flex-direction: column; gap: 2px; }
+.chain-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 7px 10px;
+  border-radius: 5px;
+}
+.chain-row:nth-child(odd) { background: var(--panel-sunk); }
+.chain-row .what { font-size: 13.5px; color: var(--ink-2); }
+.chain-row .mult, .chain-row .run {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+}
+.chain-row .mult { color: var(--ink-3); }
+.chain-row .run { font-weight: 600; }
+.chain-row.is-total { border-top: 1px solid var(--line-strong); border-radius: 0; margin-top: 4px; padding-top: 10px; background: none; }
+.chain-row.is-total .what { color: var(--ink); font-weight: 700; }
+.chain-row.is-off .mult, .chain-row.is-off .run, .chain-row.is-off .what { opacity: .42; }
+
+.flag {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-sunk);
+  color: var(--ink-2);
+}
+.flag b { color: var(--ink); }
+.flag .mark { color: var(--warn); font-weight: 700; font-family: "IBM Plex Mono", monospace; }
+
+/* ---------- type chart ---------- */
+
+.chart-scroll { overflow-x: auto; padding-bottom: 4px; }
+table.chart { border-collapse: separate; border-spacing: 2px; font-size: 12px; }
+table.chart th {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: 3px 6px;
+  white-space: nowrap;
+}
+table.chart th.row-h { text-align: right; }
+table.chart th.col-h { text-align: center; }
+table.chart caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 12px;
+  color: var(--ink-3);
+  padding-bottom: 10px;
+}
+.cell {
+  width: 46px; height: 34px;
+  border: 0;
+  border-radius: 4px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--eff-ink);
+  cursor: default;
+  padding: 0;
+}
+.cell[data-v="0"]    { background: var(--eff-0); color: var(--eff-0-ink); }
+.cell[data-v="0.25"] { background: var(--eff-025); }
+.cell[data-v="0.5"]  { background: var(--eff-05); }
+.cell[data-v="1"]    { background: var(--eff-1); color: var(--ink-3); }
+.cell[data-v="1.5"]  { background: var(--eff-15); }
+.cell[data-v="2"]    { background: var(--eff-2); }
+.cell[data-v="3"]    { background: var(--eff-3); }
+.cell.hot { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.legend { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.legend .sw {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 24px; border-radius: 4px;
+  font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--eff-ink);
+}
+.legend .gap { width: 10px; }
+
+/* ---------- roster ---------- */
+
+.roster-scroll { overflow-x: auto; }
+table.roster { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 620px; }
+table.roster th {
+  text-align: right;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 0 9px 8px;
+  border-bottom: 1px solid var(--line-strong);
+}
+table.roster th:first-child, table.roster td:first-child { text-align: left; }
+table.roster td {
+  padding: 8px 9px;
+  border-bottom: 1px solid var(--line);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink-2);
+}
+table.roster td.name {
+  font-family: "Chivo", sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+}
+table.roster td .type {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 400;
+  display: block;
+}
+table.roster tr.is-basic td { background: transparent; }
+table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
+
+/* ---------- footer ---------- */
+
+.foot {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-3);
+  max-width: 72ch;
+}
+.foot code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px;
+  background: var(--panel-sunk);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 720px) {
+  .readout { grid-template-columns: 1fr; }
+  .hero-num { font-size: 46px; }
+  .wrap { padding: 24px 16px 56px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">MONS &middot; spec v0.1 &middot; working title</div>
+    <h1>Combat Lab</h1>
+    <p class="standfirst">
+      Every rule here is the spec, run as code &mdash; except the damage formula, which
+      the spec never states. <strong>That one is a proposal.</strong> Change the numbers
+      below until the fight feels right, then we write down what you picked.
+    </p>
+  </header>
+
+  <!-- ============ matchup ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Matchup</h2>
+      <p class="panel-note">Stats come from the roster at the level you set. Level never enters the formula &mdash; it only moves the stats.</p>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label class="cap" for="atk">Attacker</label>
+        <select id="atk"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="def">Defender</label>
+        <select id="def"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="mt">Move type</label>
+        <select id="mt"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="pw">Move power</label>
+        <input id="pw" type="number" min="1" max="250" step="5" value="60">
+      </div>
+      <div class="field">
+        <label class="cap" for="lv">Level <span id="lvv">50</span></label>
+        <input id="lv" type="range" min="1" max="99" value="50">
+      </div>
+      <div class="field">
+        <label class="cap" for="cls">Attack stat</label>
+        <select id="cls">
+          <option value="phys">Physical &mdash; ATK vs DEF</option>
+          <option value="spec">Special &mdash; SpA vs SpD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toggles">
+      <button class="toggle" id="t-crit" aria-pressed="false">Critical hit &times;1.5</button>
+      <button class="toggle" id="t-kindle" aria-pressed="false">Kindling &times;1.5</button>
+      <button class="toggle" id="t-slow" aria-pressed="false">Slow Burn &times;1.2</button>
+    </div>
+
+    <div class="readout">
+      <div class="hero">
+        <div class="hero-label">Damage</div>
+        <div class="hero-num" id="dmg">0</div>
+        <div class="hero-sub" id="kos"></div>
+      </div>
+
+      <div>
+        <div class="chain" id="chain"></div>
+        <div class="flag" id="flag" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ tuning ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Formula &amp; tuning</h2>
+      <p class="panel-note">
+        The shape was chosen so damage tracks stat growth &mdash; a ratio of ATK to DEF
+        stays flat while HP grows 6.6&times;, which would make late battles drag.
+      </p>
+    </div>
+    <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--ink-2);overflow-x:auto;">
+      damage = power &times; ATK&sup2; / (ATK + DEF) / <b style="color:var(--accent)">SCALE</b> &times; STAB &times; effectiveness &times; modifiers
+    </p>
+    <div class="controls">
+      <div class="field">
+        <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
+        <input id="scale" type="range" min="40" max="220" step="5" value="100">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ type chart ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Type chart</h2>
+      <p class="panel-note">Attacker down the side, defender across the top. Click any cell to load that matchup above.</p>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="chart-scroll">
+      <table class="chart" id="chart">
+        <caption id="chartcap">Single defending type. Dual types stack additively &mdash; two weaknesses reach 3.0&times;, not 4&times;.</caption>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ roster ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Roster</h2>
+      <p class="panel-note">All nine mons at level <span id="lvv2">50</span>. Base totals are fixed by stage: 105 basic, 135 evolved, 170 final.</p>
+    </div>
+    <div class="roster-scroll">
+      <table class="roster" id="roster"></table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p style="margin:0">
+      Rules engine is <code>design/lib/rules.js</code> and <code>design/lib/damage.js</code>,
+      inlined here unchanged. The roster and type chart come from <code>design/data/*.json</code>.
+    </p>
+    <p style="margin:0">
+      Open questions this page is meant to settle: the SCALE constant, whether the
+      multiplier stack should be capped, and the crit multiplier &mdash; none of which the spec pins down.
+    </p>
+  </footer>
+</div>
+
+<script>
+// --- generated from design/lib -- do not edit here ---
+
+// GENERATED FILE -- DO NOT EDIT.
+// Source: design/data/*.json. Regenerate with: npm run build
+// This exists so the same rules module runs in Node and in the browser.
+
+const typeData = {
+  "$comment": "Canonical type chart. Mirrors SPEC.md sections 1-4. Values are attacker -> defender multipliers; any pair omitted from 'chart' is 1 (normal).",
+  "version": "0.1",
+  "types": [
+    "Normal",
+    "Fire",
+    "Water",
+    "Earth",
+    "Steel",
+    "Psychic",
+    "Dark",
+    "Light",
+    "Dragon",
+    "Phantom"
+  ],
+  "origins": {
+    "Natural": [
+      "Fire",
+      "Water",
+      "Earth",
+      "Normal",
+      "Dragon"
+    ],
+    "Made": [
+      "Steel"
+    ],
+    "Spirit": [
+      "Psychic",
+      "Dark",
+      "Light",
+      "Phantom"
+    ]
+  },
+  "chart": {
+    "Normal": {
+      "Steel": 0.5,
+      "Phantom": 0
+    },
+    "Fire": {
+      "Earth": 2,
+      "Steel": 2,
+      "Fire": 0.5,
+      "Water": 0.5,
+      "Dragon": 0.5
+    },
+    "Water": {
+      "Fire": 2,
+      "Steel": 2,
+      "Water": 0.5,
+      "Earth": 0.5,
+      "Dragon": 0.5
+    },
+    "Earth": {
+      "Water": 2,
+      "Steel": 2,
+      "Earth": 0.5,
+      "Fire": 0.5,
+      "Dragon": 0.5
+    },
+    "Steel": {
+      "Normal": 2,
+      "Fire": 0.5,
+      "Water": 0.5,
+      "Earth": 0.5,
+      "Steel": 0.5,
+      "Dragon": 0.5
+    },
+    "Psychic": {
+      "Light": 2,
+      "Dragon": 2,
+      "Psychic": 0.5,
+      "Dark": 0.5,
+      "Steel": 0.5,
+      "Normal": 0
+    },
+    "Dark": {
+      "Psychic": 2,
+      "Normal": 2,
+      "Phantom": 2,
+      "Dark": 0.5,
+      "Light": 0.5,
+      "Steel": 0.5
+    },
+    "Light": {
+      "Dark": 2,
+      "Phantom": 2,
+      "Light": 0.5,
+      "Psychic": 0.5,
+      "Steel": 0.5
+    },
+    "Dragon": {
+      "Fire": 2,
+      "Water": 2,
+      "Earth": 2,
+      "Dragon": 2,
+      "Steel": 0.5
+    },
+    "Phantom": {
+      "Psychic": 2,
+      "Phantom": 2,
+      "Dark": 0.5,
+      "Normal": 0
+    }
+  },
+  "stacking": {
+    "mode": "additive",
+    "$comment": "Each defending type contributes a percentage; sum, then look up. Immunity on either type short-circuits to 0 and is checked before the sum.",
+    "contribution": {
+      "1": 0,
+      "2": 100,
+      "0.5": -50
+    },
+    "table": {
+      "0": 1,
+      "50": 1.5,
+      "100": 2,
+      "200": 3,
+      "-50": 0.5,
+      "-100": 0.25
+    },
+    "floorPercent": -100,
+    "immunityMultiplier": 0
+  },
+  "stab": {
+    "mono": 1.5,
+    "dual": 1.25
+  }
+};
+
+const abilityData = {
+  "$comment": "Shared ability pool. Mirrors SPEC.md section 8. 'effect' is design intent in prose; there is no engine yet to encode it against.",
+  "version": "0.1",
+  "target": "50-60 shared abilities",
+  "abilities": [
+    {
+      "id": "kindling",
+      "name": "Kindling",
+      "category": "signature",
+      "signatureType": "Fire",
+      "effect": "The first attack of the battle deals 1.5x damage."
+    },
+    {
+      "id": "tidewater",
+      "name": "Tidewater",
+      "category": "signature",
+      "signatureType": "Water",
+      "effect": "Heals 1/8 of max HP at end of turn while above half HP."
+    },
+    {
+      "id": "bedrock",
+      "name": "Bedrock",
+      "category": "signature",
+      "signatureType": "Earth",
+      "effect": "Cannot be KO'd from full HP in one hit; survives at 1 HP."
+    },
+    {
+      "id": "brawny",
+      "name": "Brawny",
+      "category": "stat-bump",
+      "effect": "+3 ATK."
+    },
+    {
+      "id": "sharp-mind",
+      "name": "Sharp Mind",
+      "category": "stat-bump",
+      "effect": "+3 SpA."
+    },
+    {
+      "id": "thick-hide",
+      "name": "Thick Hide",
+      "category": "stat-bump",
+      "effect": "+3 DEF."
+    },
+    {
+      "id": "steady",
+      "name": "Steady",
+      "category": "stat-bump",
+      "effect": "+3 SpD."
+    },
+    {
+      "id": "quick-feet",
+      "name": "Quick Feet",
+      "category": "stat-bump",
+      "effect": "+3 SPD."
+    },
+    {
+      "id": "overgrown",
+      "name": "Overgrown",
+      "category": "stat-bump",
+      "effect": "+10% max HP."
+    },
+    {
+      "id": "fireproof",
+      "name": "Fireproof",
+      "category": "immunity",
+      "effect": "Cannot be burned."
+    },
+    {
+      "id": "anchored",
+      "name": "Anchored",
+      "category": "immunity",
+      "effect": "Cannot be switched out or moved.",
+      "conflictsWith": [
+        "ambush"
+      ]
+    },
+    {
+      "id": "clear-head",
+      "name": "Clear Head",
+      "category": "immunity",
+      "effect": "Immune to confusion and to stat drops."
+    },
+    {
+      "id": "cold-blood",
+      "name": "Cold Blood",
+      "category": "immunity",
+      "effect": "Immune to Dark intimidate effects."
+    },
+    {
+      "id": "grounded",
+      "name": "Grounded",
+      "category": "immunity",
+      "effect": "Immune to Earth hazards."
+    },
+    {
+      "id": "drink-deep",
+      "name": "Drink Deep",
+      "category": "absorb",
+      "effect": "Water moves heal instead of damaging."
+    },
+    {
+      "id": "ember-heart",
+      "name": "Ember Heart",
+      "category": "absorb",
+      "effect": "Fire moves heal instead of damaging."
+    },
+    {
+      "id": "mind-sponge",
+      "name": "Mind Sponge",
+      "category": "absorb",
+      "effect": "Psychic hits raise SpA instead of damaging."
+    },
+    {
+      "id": "ambush",
+      "name": "Ambush",
+      "category": "tempo",
+      "effect": "Moves first on the turn it enters.",
+      "conflictsWith": [
+        "anchored",
+        "windup"
+      ]
+    },
+    {
+      "id": "slow-burn",
+      "name": "Slow Burn",
+      "category": "tempo",
+      "effect": "Always moves last; deals +20% damage."
+    },
+    {
+      "id": "windup",
+      "name": "Windup",
+      "category": "tempo",
+      "effect": "-3 SPD; moves first on every 3rd turn.",
+      "conflictsWith": [
+        "ambush"
+      ]
+    },
+    {
+      "id": "last-stand",
+      "name": "Last Stand",
+      "category": "survival",
+      "effect": "Below 1/3 HP, ATK and SpA are raised 50%."
+    },
+    {
+      "id": "thorns",
+      "name": "Thorns",
+      "category": "survival",
+      "effect": "An attacker making contact takes 1/8 of its own max HP."
+    },
+    {
+      "id": "grudge",
+      "name": "Grudge",
+      "category": "survival",
+      "effect": "On being KO'd, the killing move loses all remaining uses."
+    },
+    {
+      "id": "colony",
+      "name": "Colony",
+      "category": "hook",
+      "effect": "Has bodies instead of HP; each body lost is one fewer hit it can make."
+    },
+    {
+      "id": "royal",
+      "name": "Royal",
+      "category": "hook",
+      "effect": "Allied Swarm mons regain one body at end of turn."
+    },
+    {
+      "id": "built",
+      "name": "Built",
+      "category": "hook",
+      "effect": "Immune to poison, burn and sleep; takes 1.5x damage from Water."
+    },
+    {
+      "id": "unreal",
+      "name": "Unreal",
+      "category": "hook",
+      "effect": "Immune to Normal moves."
+    },
+    {
+      "id": "lucky-day",
+      "name": "Lucky Day",
+      "category": "chaos",
+      "effect": "On any turn whose count is a multiple of 7, always moves first and always crits."
+    }
+  ]
+};
+
+const monData = {
+  "$comment": "Mon roster. Each entry is the JSON encoding of the three-tab template in SPEC.md section 9. Names are working titles. Learnsets are empty because move pools are TBD in v0.1 -- see OPEN_QUESTIONS.md section 3.",
+  "version": "0.1",
+  "catchThresholds": [
+    1,
+    3,
+    8,
+    15,
+    30,
+    50,
+    100
+  ],
+  "mons": [
+    {
+      "engine": {
+        "id": 1,
+        "name": "Emberkit",
+        "type1": "Fire",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Quadruped, hand-sized. Coat of fine ash that lifts when it runs.",
+        "stage": "basic",
+        "stats": {
+          "hp": 15,
+          "atk": 22,
+          "def": 13,
+          "spa": 15,
+          "spd": 13,
+          "spe": 27
+        },
+        "total": 105,
+        "abilityPool": [
+          "kindling",
+          "quick-feet",
+          "brawny"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": null,
+        "evolvesInto": {
+          "id": 4,
+          "method": "level",
+          "level": 17
+        }
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "Runs before it can stand. Trainers find them by the scorch-line of pawprints, never by the animal itself."
+          },
+          {
+            "threshold": 3,
+            "text": "The ash on its coat is spent fuel. A healthy Emberkit sheds a fingerprint's worth every hour and is always faintly warm to hold."
+          },
+          {
+            "threshold": 8,
+            "text": "It strikes hardest the moment it is loosed and softens thereafter. Old handlers say the trick is to make the first exchange the only one that matters."
+          }
+        ],
+        "whereFound": "Dry scrub and burn scars, in the first season after a fire.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Litters of two to four, born in the ash bed of a spent fire."
+        },
+        "evolutionNotes": "Evolves as its coat thickens past what it can shed, forcing the heat inward."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 4,
+        "name": "Cindermaw",
+        "type1": "Fire",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Long-limbed, knee-high. Jaw vents heat when it breathes out.",
+        "stage": "evolved",
+        "stats": {
+          "hp": 18,
+          "atk": 30,
+          "def": 16,
+          "spa": 18,
+          "spd": 16,
+          "spe": 37
+        },
+        "total": 135,
+        "abilityPool": [
+          "kindling",
+          "quick-feet",
+          "brawny",
+          "last-stand"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": {
+          "id": 1,
+          "method": "level",
+          "level": 17
+        },
+        "evolvesInto": {
+          "id": 5,
+          "method": "level",
+          "level": 34
+        }
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "It no longer sheds. Everything it used to give off to the air now goes down its throat and stays there."
+          },
+          {
+            "threshold": 3,
+            "text": "Fast enough to open and close a fight before the other animal has turned to face it. It has no plan for a fight that lasts."
+          },
+          {
+            "threshold": 8,
+            "text": "Cornered and hurt, it burns hotter -- which is the whole problem with it, and the reason it rarely reaches its third year in the wild."
+          }
+        ],
+        "whereFound": "Evolves from Emberkit. Wild specimens hold territory along ridgelines.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Does not breed at this stage."
+        },
+        "evolutionNotes": "The jaw vents open at maturity. Handlers file the change under 'the animal deciding what to do with what it can no longer let go of'."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 5,
+        "name": "Pyrelash",
+        "type1": "Fire",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Shoulder-height, whip-tailed. Leaves a standing line of heat behind a charge.",
+        "stage": "final",
+        "stats": {
+          "hp": 22,
+          "atk": 40,
+          "def": 20,
+          "spa": 22,
+          "spd": 19,
+          "spe": 47
+        },
+        "total": 170,
+        "abilityPool": [
+          "kindling",
+          "quick-feet",
+          "brawny",
+          "last-stand",
+          "ember-heart"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": {
+          "id": 4,
+          "method": "level",
+          "level": 34
+        },
+        "evolvesInto": null
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "The fastest thing on four legs in its range, and it knows the number exactly. It will not start a chase it has already lost."
+          },
+          {
+            "threshold": 3,
+            "text": "The line of heat behind a charge hangs in the air long enough to read. Trackers follow it the way they would follow a wake."
+          },
+          {
+            "threshold": 8,
+            "text": "It drinks fire. A Pyrelash walked into a burning stand of scrub will come out of it heavier than it went in."
+          }
+        ],
+        "whereFound": "Evolves from Cindermaw. Not found wild at this stage.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Breeding pairs hold a burn scar between them for as long as it stays open ground."
+        },
+        "evolutionNotes": "Final stage of the Fire starter line. Stays mono-Fire, as all three starter lines do."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 2,
+        "name": "Rillet",
+        "type1": "Water",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Otter-shaped, forearm-length. Fur sheds water so completely it is dry the moment it surfaces.",
+        "stage": "basic",
+        "stats": {
+          "hp": 18,
+          "atk": 15,
+          "def": 17,
+          "spa": 20,
+          "spd": 20,
+          "spe": 15
+        },
+        "total": 105,
+        "abilityPool": [
+          "tidewater",
+          "drink-deep",
+          "steady"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": null,
+        "evolvesInto": {
+          "id": 6,
+          "method": "level",
+          "level": 17
+        }
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "Keeps to water shallow enough to stand in. It is a poor swimmer and an excellent waiter."
+          },
+          {
+            "threshold": 3,
+            "text": "It mends while it is still winning and stops the moment it starts losing, which is either very sensible or exactly backwards depending on who you ask."
+          },
+          {
+            "threshold": 8,
+            "text": "Water thrown at a Rillet is water given to it. Every handler learns this once, usually in front of other handlers."
+          }
+        ],
+        "whereFound": "Streams, drainage ditches, and the slow ends of rivers.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Single pups, born in a bank hollow above the waterline."
+        },
+        "evolutionNotes": "Evolves once it can hold its own weight against a current."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 6,
+        "name": "Tidecalf",
+        "type1": "Water",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Barrel-chested, knee-high. Moves on land like something that would rather not.",
+        "stage": "evolved",
+        "stats": {
+          "hp": 23,
+          "atk": 19,
+          "def": 22,
+          "spa": 26,
+          "spd": 26,
+          "spe": 19
+        },
+        "total": 135,
+        "abilityPool": [
+          "tidewater",
+          "drink-deep",
+          "steady",
+          "sharp-mind"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": {
+          "id": 2,
+          "method": "level",
+          "level": 17
+        },
+        "evolvesInto": {
+          "id": 7,
+          "method": "level",
+          "level": 34
+        }
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "Slow on every axis and hard to move off any of them. It wins by still being there."
+          },
+          {
+            "threshold": 3,
+            "text": "It can hold a stretch of shallow water against animals twice its weight, and does so without ever appearing to have decided to."
+          },
+          {
+            "threshold": 8,
+            "text": "Bulls call across open water at dusk. The sound carries far enough that two Tidecalves who have never met can agree on a boundary."
+          }
+        ],
+        "whereFound": "Evolves from Rillet. Wild specimens hold estuary shallows.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Loose herds of six to ten, without hierarchy."
+        },
+        "evolutionNotes": "Gains the depth to hunt below the surface rather than from it."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 7,
+        "name": "Brinemoor",
+        "type1": "Water",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Bulk of a small boat. Carries a standing swell around itself in still water.",
+        "stage": "final",
+        "stats": {
+          "hp": 29,
+          "atk": 24,
+          "def": 28,
+          "spa": 33,
+          "spd": 33,
+          "spe": 23
+        },
+        "total": 170,
+        "abilityPool": [
+          "tidewater",
+          "drink-deep",
+          "steady",
+          "sharp-mind",
+          "overgrown"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": {
+          "id": 6,
+          "method": "level",
+          "level": 34
+        },
+        "evolvesInto": null
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "It has no fast answer to anything and does not need one. Fights against a Brinemoor are lost slowly."
+          },
+          {
+            "threshold": 3,
+            "text": "The swell it carries is not decoration. It is the animal keeping a working depth of water around itself at all times."
+          },
+          {
+            "threshold": 8,
+            "text": "Mending faster than it is being hurt is its whole strategy, and against a patient opponent it is not enough. Against an impatient one it has never once failed."
+          }
+        ],
+        "whereFound": "Evolves from Tidecalf. Not found wild at this stage.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Pairs hold a stretch of coast for life and tolerate juveniles of any line within it."
+        },
+        "evolutionNotes": "Final stage of the Water starter line. Stays mono-Water."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 3,
+        "name": "Loambit",
+        "type1": "Earth",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Squat digger, two hands' span. Plated across the shoulders and back.",
+        "stage": "basic",
+        "stats": {
+          "hp": 22,
+          "atk": 23,
+          "def": 22,
+          "spa": 10,
+          "spd": 15,
+          "spe": 13
+        },
+        "total": 105,
+        "abilityPool": [
+          "bedrock",
+          "thick-hide",
+          "grounded"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": null,
+        "evolvesInto": {
+          "id": 8,
+          "method": "level",
+          "level": 17
+        }
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "Digs before it fights and fights only where it has already dug."
+          },
+          {
+            "threshold": 3,
+            "text": "A healthy Loambit cannot be taken down in one blow from full health. It will be standing at the end of it, badly, and that is generally enough."
+          },
+          {
+            "threshold": 8,
+            "text": "It reads ground the way other animals read weather. Nothing buried in soil has ever caught one."
+          }
+        ],
+        "whereFound": "Turned earth, riverbanks, and the spoil heaps outside quarries.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Clutches of three to six, in a chamber a body-length down."
+        },
+        "evolutionNotes": "Evolves when its shoulder plates fuse into a single working shield."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 8,
+        "name": "Cragmole",
+        "type1": "Earth",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Thigh-high, front-heavy. Forelimbs ending in single fused blades.",
+        "stage": "evolved",
+        "stats": {
+          "hp": 28,
+          "atk": 30,
+          "def": 29,
+          "spa": 12,
+          "spd": 19,
+          "spe": 17
+        },
+        "total": 135,
+        "abilityPool": [
+          "bedrock",
+          "thick-hide",
+          "grounded",
+          "thorns"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": {
+          "id": 3,
+          "method": "level",
+          "level": 17
+        },
+        "evolvesInto": {
+          "id": 9,
+          "method": "level",
+          "level": 34
+        }
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "The blades are for rock. It has learned they work on other things and has not thought much further about it."
+          },
+          {
+            "threshold": 3,
+            "text": "Its plates are edged. Anything that closes with a Cragmole pays for the contact whether the Cragmole does anything about it or not."
+          },
+          {
+            "threshold": 8,
+            "text": "Quarry crews have followed Cragmole workings to seams they had missed. The animal is a better surveyor than most surveyors."
+          }
+        ],
+        "whereFound": "Evolves from Loambit. Wild specimens work the same tunnel system for years.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Solitary once the plates fuse."
+        },
+        "evolutionNotes": "Trades the last of its speed for the forelimbs."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    },
+    {
+      "engine": {
+        "id": 9,
+        "name": "Terrabulk",
+        "type1": "Earth",
+        "type2": null,
+        "origin": "Natural",
+        "body": "Shoulder-height and twice as long. Carries a course of set stone across its back.",
+        "stage": "final",
+        "stats": {
+          "hp": 35,
+          "atk": 38,
+          "def": 37,
+          "spa": 15,
+          "spd": 24,
+          "spe": 21
+        },
+        "total": 170,
+        "abilityPool": [
+          "bedrock",
+          "thick-hide",
+          "grounded",
+          "thorns",
+          "slow-burn"
+        ],
+        "learnset": [],
+        "learnsetStatus": "pending - move pools TBD",
+        "evolvesFrom": {
+          "id": 8,
+          "method": "level",
+          "level": 34
+        },
+        "evolvesInto": null
+      },
+      "dex": {
+        "entries": [
+          {
+            "threshold": 1,
+            "text": "It moves last in almost every exchange and hits hardest in almost every exchange. The two facts are the same fact."
+          },
+          {
+            "threshold": 3,
+            "text": "The stone on its back is set, not grown, and it sets it itself. No two are alike and none of them are structurally unsound."
+          },
+          {
+            "threshold": 8,
+            "text": "It cannot be taken out of a fight from full health, cannot be hurried, and cannot be gone around. Handlers describe working with one as negotiating with a hillside."
+          }
+        ],
+        "whereFound": "Evolves from Cragmole. Not found wild at this stage.",
+        "originDetail": {
+          "kind": "birth-group",
+          "value": "Solitary. Meets others only to breed, and returns to its own workings after."
+        },
+        "evolutionNotes": "Final stage of the Earth starter line. Stays mono-Earth."
+      },
+      "misc": {
+        "genderRatio": {
+          "male": 0.5,
+          "female": 0.5
+        },
+        "castes": null,
+        "relatedMons": []
+      }
+    }
+  ]
+};
+
+/**
+ * MONS rules engine.
+ *
+ * Runs unchanged in Node and in the browser -- it imports only generated data,
+ * never the filesystem. Every rule here is stated in ../SPEC.md.
+ *
+ * The damage formula lives in ./damage.js, separately, because it is the one
+ * piece the spec does not state and is therefore provisional.
+ */
+
+
+const TYPES = typeData.types;
+const CHART = typeData.chart;
+const STACKING = typeData.stacking;
+const STAB = typeData.stab;
+
+/** Base stat totals by evolution stage (SPEC.md section 5). */
+const STAGE_TOTALS = { basic: 105, evolved: 135, final: 170 };
+
+const MIN_LEVEL = 1;
+const MAX_LEVEL = 99;
+
+/** Growth divisor: a stat is exactly 2x base at L34 and 3x at L67. */
+const GROWTH_DIVISOR = 33;
+
+class SpecError extends Error {}
+
+const assertType = (t) => {
+  if (!TYPES.includes(t)) throw new SpecError(`unknown type: ${t}`);
+  return t;
+};
+
+const assertLevel = (level) => {
+  if (!Number.isInteger(level) || level < MIN_LEVEL || level > MAX_LEVEL) {
+    throw new SpecError(`level must be an integer in ${MIN_LEVEL}..${MAX_LEVEL}, got ${level}`);
+  }
+  return level;
+};
+
+// ---------------------------------------------------------------------------
+// Stats (SPEC.md section 5)
+// ---------------------------------------------------------------------------
+
+/**
+ * Non-HP stat at a level. Level is not a term in the damage formula; it acts
+ * only by moving this number.
+ */
+function statAt(base, level) {
+  assertLevel(level);
+  return base + Math.floor((base * (level - 1)) / GROWTH_DIVISOR);
+}
+
+/** HP at a level: the standard curve plus a flat +L. */
+function hpAt(base, level) {
+  return statAt(base, level) + level;
+}
+
+/** Every stat of a mon at a level, HP handled by its own curve. */
+function statsAt(stats, level) {
+  return {
+    hp: hpAt(stats.hp, level),
+    atk: statAt(stats.atk, level),
+    def: statAt(stats.def, level),
+    spa: statAt(stats.spa, level),
+    spd: statAt(stats.spd, level),
+    spe: statAt(stats.spe, level),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Type effectiveness (SPEC.md sections 2-3)
+// ---------------------------------------------------------------------------
+
+/** Raw chart lookup for a single attacker/defender pair. Unlisted pairs are 1. */
+function chartValue(attackType, defendType) {
+  assertType(attackType);
+  assertType(defendType);
+  const row = CHART[attackType] || {};
+  return Object.prototype.hasOwnProperty.call(row, defendType) ? row[defendType] : 1;
+}
+
+/** The percentage a single defending type contributes to the additive sum. */
+function contribution(chartVal) {
+  const pct = STACKING.contribution[String(chartVal)];
+  if (pct === undefined) throw new SpecError(`no contribution defined for chart value ${chartVal}`);
+  return pct;
+}
+
+/**
+ * Type effectiveness of a move against a defender of one or two types, using
+ * additive stacking.
+ *
+ * Immunity on either defending type short-circuits to 0 and cannot be
+ * cancelled by a weakness on the other type. The summed percentage is clamped
+ * at the floor before lookup, so future resistance sources cannot stack a
+ * defender past 0.25x.
+ *
+ * @param {string} attackType
+ * @param {string|string[]} defendTypes - one type, or [type1, type2]
+ * @returns {number} 0, 0.25, 0.5, 1, 1.5, 2 or 3
+ */
+function effectiveness(attackType, defendTypes) {
+  const defenders = (Array.isArray(defendTypes) ? defendTypes : [defendTypes]).filter(Boolean);
+  if (defenders.length === 0 || defenders.length > 2) {
+    throw new SpecError(`a defender has one or two types, got ${defenders.length}`);
+  }
+
+  const values = defenders.map((d) => chartValue(attackType, d));
+  if (values.some((v) => v === 0)) return STACKING.immunityMultiplier;
+
+  let sum = values.reduce((acc, v) => acc + contribution(v), 0);
+  if (sum < STACKING.floorPercent) sum = STACKING.floorPercent;
+
+  const multiplier = STACKING.table[String(sum)];
+  if (multiplier === undefined) throw new SpecError(`no multiplier defined for sum ${sum}%`);
+  return multiplier;
+}
+
+/** The full attacker-row of effectiveness against every single type. */
+function coverage(attackType) {
+  return Object.fromEntries(TYPES.map((d) => [d, effectiveness(attackType, d)]));
+}
+
+/** How every attacking type fares against a given defender. */
+function matchups(defendTypes) {
+  return Object.fromEntries(TYPES.map((a) => [a, effectiveness(a, defendTypes)]));
+}
+
+// ---------------------------------------------------------------------------
+// STAB (SPEC.md section 4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Same-type attack bonus for a user of the given type(s) using a move of
+ * moveType. Mono-types get 1.5x on their one type; dual-types get 1.25x on
+ * either of theirs.
+ */
+function stab(moveType, userTypes) {
+  const types = (Array.isArray(userTypes) ? userTypes : [userTypes]).filter(Boolean);
+  if (types.length === 0 || types.length > 2) {
+    throw new SpecError(`a user has one or two types, got ${types.length}`);
+  }
+  assertType(moveType);
+  types.forEach(assertType);
+
+  if (!types.includes(moveType)) return 1;
+  return types.length === 1 ? STAB.mono : STAB.dual;
+}
+
+/** Everything the spec says multiplies a hit, combined. */
+function attackMultiplier(moveType, userTypes, defendTypes) {
+  return stab(moveType, userTypes) * effectiveness(moveType, defendTypes);
+}
+
+// ---------------------------------------------------------------------------
+// Roster access
+// ---------------------------------------------------------------------------
+
+const MONS = monData.mons;
+const ABILITIES = abilityData.abilities;
+
+const monById = (id) => MONS.find((m) => m.engine.id === id);
+const monByName = (name) =>
+  MONS.find((m) => m.engine.name.toLowerCase() === String(name).toLowerCase());
+const abilityById = (id) => ABILITIES.find((a) => a.id === id);
+
+/** The declared types of a mon, as an array of one or two. */
+const typesOf = (mon) => [mon.engine.type1, mon.engine.type2].filter(Boolean);
+
+/** Walk an evolution line from any member of it, first stage first. */
+function evolutionLine(idOrName) {
+  let mon = typeof idOrName === 'number' ? monById(idOrName) : monByName(idOrName);
+  if (!mon) throw new SpecError(`no such mon: ${idOrName}`);
+
+  while (mon.engine.evolvesFrom) {
+    const prev = monById(mon.engine.evolvesFrom.id);
+    if (!prev) break;
+    mon = prev;
+  }
+
+  const line = [mon];
+  while (line[line.length - 1].engine.evolvesInto) {
+    const next = monById(line[line.length - 1].engine.evolvesInto.id);
+    if (!next || line.includes(next)) break;
+    line.push(next);
+  }
+  return line;
+}
+
+/**
+ * MONS damage formula.
+ *
+ * *** PROVISIONAL. This is the one part of the system SPEC.md does not state. ***
+ *
+ * Everything in rules.js is the spec written out. This file is a proposal:
+ * a formula chosen to satisfy the constraints the spec *does* impose, kept in
+ * its own module with its constants exposed so it can be retuned or replaced
+ * without touching anything else.
+ *
+ * ---------------------------------------------------------------------------
+ * THE CONSTRAINTS
+ *
+ *   1. Level is not a term (SPEC.md section 5). It acts only through stats.
+ *   2. Base stats are small; a stat is ~3.97x base at L99.
+ *   3. HP additionally gains a flat +L, so HP grows ~6.6x over the level range
+ *      while other stats grow ~3.97x.
+ *
+ * WHY THIS SHAPE
+ *
+ * Constraint 3 is the one that decides it. If damage does not grow with the
+ * stats, battles get longer and longer as levels rise.
+ *
+ *   ATK / DEF (ratio)        -- damage grows x1.00 as both sides scale.
+ *                               Flat damage against 6.6x HP: a L99 battle
+ *                               takes ~6x as many turns as a L1 one. Rejected.
+ *   ATK - DEF/2 (difference) -- grows x3.95. Correct scaling, but goes negative
+ *                               whenever DEF > 2*ATK and needs an arbitrary
+ *                               floor bolted on. Rejected.
+ *   ATK^2 / (ATK + DEF)      -- grows x3.95, is never negative or zero, and
+ *                               gives DEF smooth diminishing returns.
+ *                               Adopted.
+ *
+ * So:
+ *
+ *   base   = Power * ATK^2 / (ATK + DEF) / SCALE
+ *   damage = base * STAB * effectiveness * (ability and other modifiers)
+ *
+ * SCALE = 100 was tuned against the actual roster: at L50 a final-stage
+ * attacker needs 3 STAB hits to drop a final-stage tank, and the tank needs 2
+ * to drop the frail one. Frail-and-fast wins on tempo, bulky wins on attrition.
+ *
+ * OPEN: see OPEN_QUESTIONS.md section 2. Notably the modifier stack -- Kindling
+ * (1.5) x STAB (1.5) x 3.0x effectiveness is 6.75x before this formula does
+ * anything, which is a bigger cliff than the additive type rule was adopted to
+ * avoid. `explain()` below reports the stack so it stays visible.
+ */
+
+
+/** Tunable constants. Change these, not the shape of the formula. */
+const TUNING = {
+  /** Divisor on raw damage. Lower = faster battles. */
+  SCALE: 100,
+  /** Damage is never less than this, so nothing is perfectly safe. */
+  MIN_DAMAGE: 1,
+  /** Crit multiplier. Not specified anywhere; placeholder. */
+  CRIT: 1.5,
+};
+
+/**
+ * The stat-vs-stat core, before any multiplier.
+ * Quadratic in ATK over (ATK + DEF): scales with level, never negative,
+ * diminishing returns on DEF.
+ */
+function effectiveAttack(atk, def) {
+  if (atk <= 0) throw new SpecError(`ATK must be positive, got ${atk}`);
+  if (def <= 0) throw new SpecError(`DEF must be positive, got ${def}`);
+  return (atk * atk) / (atk + def);
+}
+
+/**
+ * Full damage for one hit.
+ *
+ * @param {object} o
+ * @param {number} o.power        move power
+ * @param {number} o.atk          attacker's ATK or SpA, already at level
+ * @param {number} o.def          defender's DEF or SpD, already at level
+ * @param {string} o.moveType
+ * @param {string|string[]} o.attackerTypes
+ * @param {string|string[]} o.defenderTypes
+ * @param {number} [o.modifier=1] everything else multiplied in (abilities,
+ *                                weather, Slow Burn's +20%, ...)
+ * @param {boolean} [o.crit=false]
+ * @returns {number} integer damage, floored at MIN_DAMAGE unless immune
+ */
+function damage({
+  power, atk, def, moveType, attackerTypes, defenderTypes, modifier = 1, crit = false,
+}) {
+  if (power <= 0) throw new SpecError(`power must be positive, got ${power}`);
+
+  const eff = effectiveness(moveType, defenderTypes);
+  if (eff === 0) return 0; // immunity is absolute; no floor applies
+
+  const raw = (power * effectiveAttack(atk, def)) / TUNING.SCALE;
+  const total = raw
+    * stab(moveType, attackerTypes)
+    * eff
+    * modifier
+    * (crit ? TUNING.CRIT : 1);
+
+  return Math.max(TUNING.MIN_DAMAGE, Math.floor(total));
+}
+
+/**
+ * Same calculation, with every step reported. Use this in tools and tests --
+ * it is what makes the modifier stack visible instead of buried.
+ */
+function explain(o) {
+  const eff = effectiveness(o.moveType, o.defenderTypes);
+  const st = stab(o.moveType, o.attackerTypes);
+  const mod = o.modifier ?? 1;
+  const critMult = o.crit ? TUNING.CRIT : 1;
+  return {
+    effectiveAttack: effectiveAttack(o.atk, o.def),
+    raw: (o.power * effectiveAttack(o.atk, o.def)) / TUNING.SCALE,
+    stab: st,
+    effectiveness: eff,
+    modifier: mod,
+    crit: critMult,
+    /** Everything multiplied on top of the raw number. Watch this figure. */
+    multiplierStack: st * eff * mod * critMult,
+    damage: damage(o),
+  };
+}
+
+/** Hits to KO, given full HP. Infinity if the move cannot damage at all. */
+function hitsToKO(hp, dmg) {
+  return dmg <= 0 ? Infinity : Math.ceil(hp / dmg);
+}
+
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { crit: false, kindle: false, slow: false };
+
+  // ---- populate controls -------------------------------------------------
+
+  var monOpts = MONS.map(function (m) {
+    return '<option value="' + m.engine.id + '">' + m.engine.name +
+           ' · ' + m.engine.type1 + '</option>';
+  }).join('');
+  $('atk').innerHTML = monOpts;
+  $('def').innerHTML = monOpts;
+  $('atk').value = 5;   // Pyrelash
+  $('def').value = 9;   // Terrabulk
+
+  $('mt').innerHTML = TYPES.map(function (t) {
+    return '<option value="' + t + '">' + t + '</option>';
+  }).join('');
+  $('mt').value = 'Fire';
+
+  // ---- legend ------------------------------------------------------------
+
+  var STEPS = [
+    ['0', 'immune'], ['0.25', ''], ['0.5', 'resisted'], ['1', 'normal'],
+    ['1.5', ''], ['2', 'effective'], ['3', 'double weak']
+  ];
+  $('legend').innerHTML =
+    '<span style="color:var(--ink-3)">resisted</span><span class="gap"></span>' +
+    STEPS.map(function (s) {
+      return '<span class="sw" data-v="' + s[0] + '" style="background:var(--eff-' +
+        s[0].replace('.', '') + ');' + (s[0] === '0' ? 'color:var(--eff-0-ink);' :
+        s[0] === '1' ? 'color:var(--ink-3);' : '') + '">' + s[0] + '×</span>';
+    }).join('') +
+    '<span class="gap"></span><span style="color:var(--ink-3)">effective</span>';
+
+  // ---- type chart --------------------------------------------------------
+
+  var chart = $('chart');
+  var head = '<tr><th></th>' + TYPES.map(function (t) {
+    return '<th class="col-h">' + t.slice(0, 3) + '</th>';
+  }).join('') + '</tr>';
+  var rows = TYPES.map(function (a) {
+    return '<tr><th class="row-h">' + a + '</th>' + TYPES.map(function (d) {
+      var v = effectiveness(a, d);
+      return '<td><button class="cell" data-v="' + v + '" data-a="' + a + '" data-d="' + d +
+        '" title="' + a + ' → ' + d + ' = ' + v + '×">' +
+        (v === 1 ? '·' : v + '×') + '</button></td>';
+    }).join('') + '</tr>';
+  }).join('');
+  chart.innerHTML = chart.innerHTML + head + rows;
+
+  chart.addEventListener('click', function (e) {
+    var c = e.target.closest('.cell');
+    if (!c) return;
+    $('mt').value = c.dataset.a;
+    // pick the first roster mon of the clicked defending type, if there is one
+    var match = MONS.filter(function (m) { return m.engine.type1 === c.dataset.d; })[0];
+    if (match) $('def').value = match.engine.id;
+    render();
+  });
+
+  // ---- render ------------------------------------------------------------
+
+  function fmt(n) {
+    return (Math.round(n * 100) / 100).toString();
+  }
+
+  function render() {
+    var level = Number($('lv').value);
+    var power = Math.max(1, Number($('pw').value) || 1);
+    var special = $('cls').value === 'spec';
+
+    TUNING.SCALE = Number($('scale').value);
+    $('scalev').textContent = TUNING.SCALE;
+    $('lvv').textContent = level;
+    $('lvv2').textContent = level;
+
+    var A = monById(Number($('atk').value));
+    var D = monById(Number($('def').value));
+    var as = statsAt(A.engine.stats, level);
+    var ds = statsAt(D.engine.stats, level);
+
+    var modifier = (state.kindle ? 1.5 : 1) * (state.slow ? 1.2 : 1);
+
+    var args = {
+      power: power,
+      atk: special ? as.spa : as.atk,
+      def: special ? ds.spd : ds.def,
+      moveType: $('mt').value,
+      attackerTypes: typesOf(A),
+      defenderTypes: typesOf(D),
+      modifier: modifier,
+      crit: state.crit
+    };
+
+    var e = explain(args);
+
+    $('dmg').textContent = e.damage;
+
+    var hits = hitsToKO(ds.hp, e.damage);
+    $('kos').innerHTML = e.damage === 0
+      ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
+      : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +
+        '</b> to KO ' + D.engine.name + ', at ' + ds.hp + ' HP.';
+
+    // multiplier chain
+    var lines = [
+      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def, '', fmt(e.raw), false],
+      ['STAB &mdash; ' + (e.stab === 1 ? 'not its type' : (typesOf(A).length === 1 ? 'mono-type' : 'dual-type')), '×' + e.stab, fmt(e.raw * e.stab), e.stab === 1],
+      ['Type &mdash; ' + $('mt').value + ' vs ' + typesOf(D).join('/'), '×' + e.effectiveness, fmt(e.raw * e.stab * e.effectiveness), e.effectiveness === 1],
+      ['Abilities' + (modifier === 1 ? ' &mdash; none active' : ''), '×' + fmt(modifier), fmt(e.raw * e.stab * e.effectiveness * modifier), modifier === 1],
+      ['Critical hit', '×' + e.crit, fmt(e.raw * e.stab * e.effectiveness * modifier * e.crit), e.crit === 1]
+    ];
+    var html = lines.map(function (l) {
+      return '<div class="chain-row' + (l[3] ? ' is-off' : '') + '">' +
+        '<span class="what">' + l[0] + '</span>' +
+        '<span class="mult">' + l[1] + '</span>' +
+        '<span class="run">' + l[2] + '</span></div>';
+    }).join('');
+    html += '<div class="chain-row is-total"><span class="what">Damage dealt</span>' +
+      '<span class="mult">stack ×' + fmt(e.multiplierStack) + '</span>' +
+      '<span class="run">' + e.damage + '</span></div>';
+    $('chain').innerHTML = html;
+
+    // the cliff flag
+    var flag = $('flag');
+    if (e.multiplierStack >= 4.5) {
+      flag.hidden = false;
+      flag.innerHTML = '<span class="mark">!</span><span>The multiplier stack is <b>×' +
+        fmt(e.multiplierStack) + '</b> before the formula runs. Additive type stacking was ' +
+        'adopted to avoid 4× cliffs — a stack this size puts one back. Worth deciding ' +
+        'whether modifiers should cap.</span>';
+    } else {
+      flag.hidden = true;
+    }
+
+    // highlight the live cell
+    Array.prototype.forEach.call(chart.querySelectorAll('.cell'), function (c) {
+      c.classList.toggle('hot',
+        c.dataset.a === $('mt').value && c.dataset.d === D.engine.type1);
+    });
+
+    renderRoster(level);
+  }
+
+  function renderRoster(level) {
+    var head = '<tr><th>Mon</th><th>Stage</th><th>HP</th><th>ATK</th><th>DEF</th>' +
+      '<th>SP.ATK</th><th>SP.DEF</th><th>SPEED</th><th>Base total</th></tr>';
+    var body = MONS.map(function (m) {
+      var s = statsAt(m.engine.stats, level);
+      return '<tr><td class="name">' + m.engine.name +
+        '<span class="type">' + typesOf(m).join('/') + '</span></td>' +
+        '<td>' + m.engine.stage + '</td>' +
+        '<td class="hp">' + s.hp + '</td><td>' + s.atk + '</td><td>' + s.def + '</td>' +
+        '<td>' + s.spa + '</td><td>' + s.spd + '</td><td>' + s.spe + '</td>' +
+        '<td class="tot">' + m.engine.total + '</td></tr>';
+    }).join('');
+    $('roster').innerHTML = head + body;
+  }
+
+  // ---- wiring ------------------------------------------------------------
+
+  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale'].forEach(function (id) {
+    $(id).addEventListener('input', render);
+  });
+
+  [['t-crit', 'crit'], ['t-kindle', 'kindle'], ['t-slow', 'slow']].forEach(function (p) {
+    $(p[0]).addEventListener('click', function () {
+      state[p[1]] = !state[p[1]];
+      this.setAttribute('aria-pressed', String(state[p[1]]));
+      render();
+    });
+  });
+
+  render();
+})();
+</script>

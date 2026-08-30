@@ -8,11 +8,13 @@ the rules the spec actually pins down.
 design/
   SPEC.md              canonical prose spec (v0.1)
   OPEN_QUESTIONS.md    what is unsettled, and the balance analysis behind it
-  data/                machine-readable mirror -- types, abilities, mons
-  lib/mons.js          reference implementation of the rules
-  test/                80 tests over the rules and the data
-  tools/analyze.js     type-chart balance + growth analysis
-  run-tests.sh         runs everything
+  data/                machine-readable source -- types, abilities, mons
+  lib/rules.js         the spec as code: types, stacking, STAB, stat curves
+  lib/damage.js        the damage formula -- PROPOSED, not in the spec
+  lib/data.generated.js  generated from data/; do not edit
+  test/                101 tests over the rules, the data and the formula
+  tools/               build steps, balance analysis, dev server
+../game/               the playable page -- see game/README.md
 ```
 
 ## Run it
@@ -20,11 +22,17 @@ design/
 Node 18+, no dependencies.
 
 ```sh
-./design/run-tests.sh        # 80 tests
-node design/tools/analyze.js # balance analysis
+cd design
+npm test         # 101 tests
+npm run analyze  # type-chart balance and growth analysis
+npm run build    # regenerate lib/data.generated.js and game/index.html
+npm run serve    # http://localhost:8080/game/
 ```
 
-## The idea in four rules
+To just look at the thing, open `game/index.html` — it is self-contained and
+needs no server.
+
+## The idea in five rules
 
 1. **Ten types** on two rock-paper-scissors cycles — Water → Fire → Earth →
    Water, and Psychic → Light → Dark → Psychic — with Steel as a defensive
@@ -38,13 +46,17 @@ node design/tools/analyze.js # balance analysis
 4. **Level is not in the damage formula.** It acts only through stats, so a
    level lead is worth exactly the stats it buys, and an underlevelled mon with
    a type advantage stays relevant.
+5. **Damage is `power × ATK²/(ATK+DEF) / 100`**, times the multipliers above.
+   This one is a *proposal*, not spec — it is the piece v0.1 never stated. See
+   [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §2.
 
 ## Reading order
 
-Start with [`SPEC.md`](SPEC.md). Then [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md),
-which is the more useful document right now — it lists what v0.1 leaves
-undecided, most importantly that **the damage formula itself is not specified**,
-and it flags Dragon as the one type balanced by nothing but the word "rare".
+Open `game/index.html` first — the numbers are easier to argue with than the
+prose. Then [`SPEC.md`](SPEC.md) for the rules, and
+[`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md), which is the document that actually
+needs decisions: the damage formula and whether its modifier stack should cap,
+and Dragon, the one type balanced by nothing but the word "rare".
 
 ## How this stays honest
 
@@ -59,6 +71,8 @@ v0.1 was being written.
 [`test/rules.test.js`](test/rules.test.js) covers the mechanics themselves,
 including all four worked examples from `SPEC.md` §3 and an exhaustive sweep
 over every attacker × dual-type combination.
+[`test/damage.test.js`](test/damage.test.js) pins down the constraints the
+formula was chosen to satisfy, so a future retune cannot quietly break them.
 
 ## Status
 
@@ -68,4 +82,4 @@ over every attacker × dual-type combination.
 | Total mons | — | 9 |
 | Abilities | 50–60 | 28 |
 | Moves | TBD | not started |
-| Damage formula | — | **not specified** |
+| Damage formula | — | **proposed, awaiting a decision** |

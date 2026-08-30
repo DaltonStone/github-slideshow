@@ -69,31 +69,50 @@ deletion.
 
 ---
 
-## 2. The damage formula
+## 2. The damage formula — PROPOSED, needs your call
 
-**This is the largest gap.** The spec fixes every multiplier — type
-effectiveness, STAB, ability modifiers like Slow Burn's +20% — and rules level
-*out* of the formula. It never states the formula those multiply.
+v0.1 fixed every multiplier and ruled level *out* of the formula, but never
+stated the formula those multiply. There is now a proposal in
+[`lib/damage.js`](lib/damage.js), kept in its own module so it can be retuned or
+replaced without touching anything else:
 
-Nothing in `lib/` invents one, deliberately: getting it wrong quietly would
-poison every stat and move number authored afterwards. Blocked on it:
+```
+damage = power × ATK² / (ATK + DEF) / SCALE × STAB × effectiveness × modifiers
+```
 
-- **Whether small base stats work at all.** With bases in the 10–47 range and a
-  ~3.97× cap at L99, a final-stage ATK tops out around 158. Whether that is a
-  sensible input depends entirely on the formula's shape.
-- **Move power scale.** Cannot be chosen before the formula.
-- **What the ATK/DEF ratio does.** A linear ratio makes DEF investment
-  hyperbolic in value; a difference makes it linear. Steel's whole identity
-  rests on this choice.
-- **Crit multiplier**, and whether crits ignore DEF changes.
-- **Whether the modifiers stack multiplicatively.** Kindling (1.5×) + STAB
-  (1.5×) + 3.0× effectiveness is 6.75× before the formula does anything. If
-  additive stacking was adopted to avoid 4× cliffs, a 6.75× multiplier stack is
-  worth a second look — the cliff was moved, not removed.
+### Why this shape
 
-**Recommendation:** settle this next, before any move or any further mon.
+The deciding constraint is that HP grows ~6.6× across the level range (the
+curve plus its flat `+L`) while every other stat grows ~3.97×. If damage does
+not grow with the stats, battles get longer and longer as levels rise.
 
----
+| Candidate | Damage growth L1→L99 | Verdict |
+|---|---|---|
+| `ATK / DEF` (ratio) | ×1.00 | **Rejected.** Flat damage against 6.6× HP — a L99 battle takes ~6× the turns of a L1 one. |
+| `ATK − DEF/2` (difference) | ×3.95 | **Rejected.** Correct scaling, but goes negative whenever DEF > 2×ATK and needs an arbitrary floor bolted on. |
+| `ATK² / (ATK + DEF)` | ×3.95 | **Adopted.** Never negative, smooth diminishing returns on DEF. |
+
+`SCALE = 100` was tuned against the real roster: at L50 a final-stage attacker
+needs 3 neutral STAB hits to drop a final-stage tank, and the tank needs 2 to
+drop the frail one. Frail-and-fast wins on tempo, bulky wins on attrition.
+
+### Still yours to decide
+
+1. **Is SCALE right?** It sets battle length and nothing else. The
+   [Combat Lab](../game/index.html) has a live slider for it.
+2. **Should the modifier stack cap?** This is the real problem. Kindling (1.5)
+   × mono STAB (1.5) × 3.0× effectiveness = **6.75× before the formula runs**,
+   and with a crit it reaches 10.1×. Measured in the sandbox: that one-shots a
+   full-health final-stage tank (208 damage into 136 HP). Additive type stacking
+   was adopted specifically to avoid 4× cliffs — a 6.75× modifier stack puts one
+   straight back. Options: cap the product, make ability modifiers additive with
+   each other, or accept it as the reward for setting up a read.
+   Note `Bedrock` ("cannot be KO'd from full HP in one hit") is already a
+   partial answer to this, which suggests the tension was anticipated.
+3. **The crit multiplier**, currently a 1.5 placeholder, and whether crits
+   should ignore DEF boosts.
+4. **The physical/special split.** Six stats imply one and the sandbox assumes
+   it (ATK↔DEF, SpA↔SpD), but no document states it. It should be written down.
 
 ## 3. Moves
 

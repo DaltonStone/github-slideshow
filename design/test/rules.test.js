@@ -1,9 +1,7 @@
-'use strict';
+import test from 'node:test';
+import assert from 'node:assert/strict';
 
-const test = require('node:test');
-const assert = require('node:assert/strict');
-
-const M = require('../lib/mons.js');
+import * as M from '../lib/rules.js';
 
 // ---------------------------------------------------------------------------
 // Stat growth (SPEC.md section 5)

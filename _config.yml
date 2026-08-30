@@ -103,6 +103,7 @@ reveal:
 
 exclude: [
   "design",
+  "game",
   "Gemfile",
   "Gemfile.lock",
   "vendor",

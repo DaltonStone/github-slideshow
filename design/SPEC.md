@@ -287,9 +287,12 @@ The JSON encoding of this template is documented in
 
 ## 11. Not yet designed
 
-- **The damage formula itself.** The spec fixes the *multipliers* (type
-  effectiveness, STAB) and states that level is not a term, but the core
-  ATK/DEF-to-damage expression is not specified. Nothing here invents one.
+- **The damage formula itself.** This spec fixes the *multipliers* (type
+  effectiveness, STAB) and states that level is not a term, but never states the
+  core ATK/DEF-to-damage expression. A proposal now exists in
+  [`lib/damage.js`](lib/damage.js), deliberately kept out of this document until
+  it is accepted — see [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §2, and try it in
+  the [Combat Lab](../game/index.html).
 - **Moves.** Power, accuracy, PP, physical/special split, priority, and every
   learnset.
 - **Status conditions.** Several abilities reference burn, poison, sleep and

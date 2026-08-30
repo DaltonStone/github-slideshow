@@ -1,0 +1,712 @@
+<title>MONS Combat Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground:      #f4f6f7;
+  --panel:       #ffffff;
+  --panel-sunk:  #eceff1;
+  --line:        #d5dbdf;
+  --line-strong: #b3bcc3;
+  --ink:         #14181b;
+  --ink-2:       #4d585f;
+  --ink-3:       #77838b;
+  --accent:      #5b46c9;
+  --accent-soft: #ece9fb;
+
+  /* Diverging effectiveness scale: cool = resisted, neutral = normal,
+     warm = effective. Immune is off-scale and gets its own dark slate. */
+  --eff-0:    #2b3440;
+  --eff-0-ink:#e8edf1;
+  --eff-025:  #b3cfe9;
+  --eff-05:   #dce9f6;
+  --eff-1:    #ececea;
+  --eff-15:   #f9e2da;
+  --eff-2:    #f2b9a4;
+  --eff-3:    #e89478;
+  --eff-ink:  #14181b;
+
+  --good: #0ca30c;
+  --warn: #b8791a;
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:      #101315;
+    --panel:       #191d20;
+    --panel-sunk:  #14181a;
+    --line:        #2b3237;
+    --line-strong: #3d464c;
+    --ink:         #eef2f4;
+    --ink-2:       #a6b1b8;
+    --ink-3:       #77838b;
+    --accent:      #a99bf5;
+    --accent-soft: #262046;
+
+    --eff-0:    #12181f;
+    --eff-0-ink:#8794a1;
+    --eff-025:  #27527f;
+    --eff-05:   #1c2c3d;
+    --eff-1:    #34383b;
+    --eff-15:   #4a2f28;
+    --eff-2:    #7a4132;
+    --eff-3:    #b0503a;
+    --eff-ink:  #f2f5f7;
+
+    --good: #38c738;
+    --warn: #e0a537;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:      #101315;
+  --panel:       #191d20;
+  --panel-sunk:  #14181a;
+  --line:        #2b3237;
+  --line-strong: #3d464c;
+  --ink:         #eef2f4;
+  --ink-2:       #a6b1b8;
+  --ink-3:       #77838b;
+  --accent:      #a99bf5;
+  --accent-soft: #262046;
+
+  --eff-0:    #12181f;
+  --eff-0-ink:#8794a1;
+  --eff-025:  #27527f;
+  --eff-05:   #1c2c3d;
+  --eff-1:    #34383b;
+  --eff-15:   #4a2f28;
+  --eff-2:    #7a4132;
+  --eff-3:    #b0503a;
+  --eff-ink:  #f2f5f7;
+
+  --good: #38c738;
+  --warn: #e0a537;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Chivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead { display: flex; flex-direction: column; gap: 10px; }
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 4.6vw, 46px);
+  font-weight: 900;
+  letter-spacing: -.025em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.standfirst {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--ink-2);
+  font-size: 16px;
+}
+.standfirst strong { color: var(--ink); font-weight: 700; }
+
+/* ---------- panels ---------- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.panel-note { margin: 0; font-size: 13px; color: var(--ink-3); max-width: 58ch; }
+
+/* ---------- controls ---------- */
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+label.cap {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+select, input[type="number"] {
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--panel-sunk);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 8px 9px;
+  width: 100%;
+  min-width: 0;
+}
+input[type="range"] { width: 100%; accent-color: var(--accent); margin: 6px 0 0; }
+select:focus-visible, input:focus-visible, button:focus-visible, .cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.toggles { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.toggle {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 13px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-sunk);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.toggle[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ---------- readout ---------- */
+
+.readout {
+  display: grid;
+  grid-template-columns: minmax(190px, 250px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.hero {
+  background: var(--panel-sunk);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.hero-num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 58px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+.hero-label {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hero-sub { font-size: 14px; color: var(--ink-2); margin-top: 7px; }
+.hero-sub b { color: var(--ink); font-weight: 700; }
+
+/* multiplier chain */
+.chain { display: flex; flex-direction: column; gap: 2px; }
+.chain-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 7px 10px;
+  border-radius: 5px;
+}
+.chain-row:nth-child(odd) { background: var(--panel-sunk); }
+.chain-row .what { font-size: 13.5px; color: var(--ink-2); }
+.chain-row .mult, .chain-row .run {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+}
+.chain-row .mult { color: var(--ink-3); }
+.chain-row .run { font-weight: 600; }
+.chain-row.is-total { border-top: 1px solid var(--line-strong); border-radius: 0; margin-top: 4px; padding-top: 10px; background: none; }
+.chain-row.is-total .what { color: var(--ink); font-weight: 700; }
+.chain-row.is-off .mult, .chain-row.is-off .run, .chain-row.is-off .what { opacity: .42; }
+
+.flag {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-sunk);
+  color: var(--ink-2);
+}
+.flag b { color: var(--ink); }
+.flag .mark { color: var(--warn); font-weight: 700; font-family: "IBM Plex Mono", monospace; }
+
+/* ---------- type chart ---------- */
+
+.chart-scroll { overflow-x: auto; padding-bottom: 4px; }
+table.chart { border-collapse: separate; border-spacing: 2px; font-size: 12px; }
+table.chart th {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: 3px 6px;
+  white-space: nowrap;
+}
+table.chart th.row-h { text-align: right; }
+table.chart th.col-h { text-align: center; }
+table.chart caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 12px;
+  color: var(--ink-3);
+  padding-bottom: 10px;
+}
+.cell {
+  width: 46px; height: 34px;
+  border: 0;
+  border-radius: 4px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--eff-ink);
+  cursor: default;
+  padding: 0;
+}
+.cell[data-v="0"]    { background: var(--eff-0); color: var(--eff-0-ink); }
+.cell[data-v="0.25"] { background: var(--eff-025); }
+.cell[data-v="0.5"]  { background: var(--eff-05); }
+.cell[data-v="1"]    { background: var(--eff-1); color: var(--ink-3); }
+.cell[data-v="1.5"]  { background: var(--eff-15); }
+.cell[data-v="2"]    { background: var(--eff-2); }
+.cell[data-v="3"]    { background: var(--eff-3); }
+.cell.hot { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.legend { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.legend .sw {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 24px; border-radius: 4px;
+  font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--eff-ink);
+}
+.legend .gap { width: 10px; }
+
+/* ---------- roster ---------- */
+
+.roster-scroll { overflow-x: auto; }
+table.roster { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 620px; }
+table.roster th {
+  text-align: right;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  padding: 0 9px 8px;
+  border-bottom: 1px solid var(--line-strong);
+}
+table.roster th:first-child, table.roster td:first-child { text-align: left; }
+table.roster td {
+  padding: 8px 9px;
+  border-bottom: 1px solid var(--line);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink-2);
+}
+table.roster td.name {
+  font-family: "Chivo", sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+}
+table.roster td .type {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 400;
+  display: block;
+}
+table.roster tr.is-basic td { background: transparent; }
+table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
+
+/* ---------- footer ---------- */
+
+.foot {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-3);
+  max-width: 72ch;
+}
+.foot code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px;
+  background: var(--panel-sunk);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 720px) {
+  .readout { grid-template-columns: 1fr; }
+  .hero-num { font-size: 46px; }
+  .wrap { padding: 24px 16px 56px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">MONS &middot; spec v0.1 &middot; working title</div>
+    <h1>Combat Lab</h1>
+    <p class="standfirst">
+      Every rule here is the spec, run as code &mdash; except the damage formula, which
+      the spec never states. <strong>That one is a proposal.</strong> Change the numbers
+      below until the fight feels right, then we write down what you picked.
+    </p>
+  </header>
+
+  <!-- ============ matchup ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Matchup</h2>
+      <p class="panel-note">Stats come from the roster at the level you set. Level never enters the formula &mdash; it only moves the stats.</p>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label class="cap" for="atk">Attacker</label>
+        <select id="atk"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="def">Defender</label>
+        <select id="def"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="mt">Move type</label>
+        <select id="mt"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="pw">Move power</label>
+        <input id="pw" type="number" min="1" max="250" step="5" value="60">
+      </div>
+      <div class="field">
+        <label class="cap" for="lv">Level <span id="lvv">50</span></label>
+        <input id="lv" type="range" min="1" max="99" value="50">
+      </div>
+      <div class="field">
+        <label class="cap" for="cls">Attack stat</label>
+        <select id="cls">
+          <option value="phys">Physical &mdash; ATK vs DEF</option>
+          <option value="spec">Special &mdash; SpA vs SpD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toggles">
+      <button class="toggle" id="t-crit" aria-pressed="false">Critical hit &times;1.5</button>
+      <button class="toggle" id="t-kindle" aria-pressed="false">Kindling &times;1.5</button>
+      <button class="toggle" id="t-slow" aria-pressed="false">Slow Burn &times;1.2</button>
+    </div>
+
+    <div class="readout">
+      <div class="hero">
+        <div class="hero-label">Damage</div>
+        <div class="hero-num" id="dmg">0</div>
+        <div class="hero-sub" id="kos"></div>
+      </div>
+
+      <div>
+        <div class="chain" id="chain"></div>
+        <div class="flag" id="flag" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ tuning ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Formula &amp; tuning</h2>
+      <p class="panel-note">
+        The shape was chosen so damage tracks stat growth &mdash; a ratio of ATK to DEF
+        stays flat while HP grows 6.6&times;, which would make late battles drag.
+      </p>
+    </div>
+    <p style="margin:0;font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--ink-2);overflow-x:auto;">
+      damage = power &times; ATK&sup2; / (ATK + DEF) / <b style="color:var(--accent)">SCALE</b> &times; STAB &times; effectiveness &times; modifiers
+    </p>
+    <div class="controls">
+      <div class="field">
+        <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
+        <input id="scale" type="range" min="40" max="220" step="5" value="100">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ type chart ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Type chart</h2>
+      <p class="panel-note">Attacker down the side, defender across the top. Click any cell to load that matchup above.</p>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="chart-scroll">
+      <table class="chart" id="chart">
+        <caption id="chartcap">Single defending type. Dual types stack additively &mdash; two weaknesses reach 3.0&times;, not 4&times;.</caption>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ roster ============ -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Roster</h2>
+      <p class="panel-note">All nine mons at level <span id="lvv2">50</span>. Base totals are fixed by stage: 105 basic, 135 evolved, 170 final.</p>
+    </div>
+    <div class="roster-scroll">
+      <table class="roster" id="roster"></table>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p style="margin:0">
+      Rules engine is <code>design/lib/rules.js</code> and <code>design/lib/damage.js</code>,
+      inlined here unchanged. The roster and type chart come from <code>design/data/*.json</code>.
+    </p>
+    <p style="margin:0">
+      Open questions this page is meant to settle: the SCALE constant, whether the
+      multiplier stack should be capped, and the crit multiplier &mdash; none of which the spec pins down.
+    </p>
+  </footer>
+</div>
+
+<script>
+/*INJECT:ENGINE*/
+
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { crit: false, kindle: false, slow: false };
+
+  // ---- populate controls -------------------------------------------------
+
+  var monOpts = MONS.map(function (m) {
+    return '<option value="' + m.engine.id + '">' + m.engine.name +
+           ' · ' + m.engine.type1 + '</option>';
+  }).join('');
+  $('atk').innerHTML = monOpts;
+  $('def').innerHTML = monOpts;
+  $('atk').value = 5;   // Pyrelash
+  $('def').value = 9;   // Terrabulk
+
+  $('mt').innerHTML = TYPES.map(function (t) {
+    return '<option value="' + t + '">' + t + '</option>';
+  }).join('');
+  $('mt').value = 'Fire';
+
+  // ---- legend ------------------------------------------------------------
+
+  var STEPS = [
+    ['0', 'immune'], ['0.25', ''], ['0.5', 'resisted'], ['1', 'normal'],
+    ['1.5', ''], ['2', 'effective'], ['3', 'double weak']
+  ];
+  $('legend').innerHTML =
+    '<span style="color:var(--ink-3)">resisted</span><span class="gap"></span>' +
+    STEPS.map(function (s) {
+      return '<span class="sw" data-v="' + s[0] + '" style="background:var(--eff-' +
+        s[0].replace('.', '') + ');' + (s[0] === '0' ? 'color:var(--eff-0-ink);' :
+        s[0] === '1' ? 'color:var(--ink-3);' : '') + '">' + s[0] + '×</span>';
+    }).join('') +
+    '<span class="gap"></span><span style="color:var(--ink-3)">effective</span>';
+
+  // ---- type chart --------------------------------------------------------
+
+  var chart = $('chart');
+  var head = '<tr><th></th>' + TYPES.map(function (t) {
+    return '<th class="col-h">' + t.slice(0, 3) + '</th>';
+  }).join('') + '</tr>';
+  var rows = TYPES.map(function (a) {
+    return '<tr><th class="row-h">' + a + '</th>' + TYPES.map(function (d) {
+      var v = effectiveness(a, d);
+      return '<td><button class="cell" data-v="' + v + '" data-a="' + a + '" data-d="' + d +
+        '" title="' + a + ' → ' + d + ' = ' + v + '×">' +
+        (v === 1 ? '·' : v + '×') + '</button></td>';
+    }).join('') + '</tr>';
+  }).join('');
+  chart.innerHTML = chart.innerHTML + head + rows;
+
+  chart.addEventListener('click', function (e) {
+    var c = e.target.closest('.cell');
+    if (!c) return;
+    $('mt').value = c.dataset.a;
+    // pick the first roster mon of the clicked defending type, if there is one
+    var match = MONS.filter(function (m) { return m.engine.type1 === c.dataset.d; })[0];
+    if (match) $('def').value = match.engine.id;
+    render();
+  });
+
+  // ---- render ------------------------------------------------------------
+
+  function fmt(n) {
+    return (Math.round(n * 100) / 100).toString();
+  }
+
+  function render() {
+    var level = Number($('lv').value);
+    var power = Math.max(1, Number($('pw').value) || 1);
+    var special = $('cls').value === 'spec';
+
+    TUNING.SCALE = Number($('scale').value);
+    $('scalev').textContent = TUNING.SCALE;
+    $('lvv').textContent = level;
+    $('lvv2').textContent = level;
+
+    var A = monById(Number($('atk').value));
+    var D = monById(Number($('def').value));
+    var as = statsAt(A.engine.stats, level);
+    var ds = statsAt(D.engine.stats, level);
+
+    var modifier = (state.kindle ? 1.5 : 1) * (state.slow ? 1.2 : 1);
+
+    var args = {
+      power: power,
+      atk: special ? as.spa : as.atk,
+      def: special ? ds.spd : ds.def,
+      moveType: $('mt').value,
+      attackerTypes: typesOf(A),
+      defenderTypes: typesOf(D),
+      modifier: modifier,
+      crit: state.crit
+    };
+
+    var e = explain(args);
+
+    $('dmg').textContent = e.damage;
+
+    var hits = hitsToKO(ds.hp, e.damage);
+    $('kos').innerHTML = e.damage === 0
+      ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
+      : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +
+        '</b> to KO ' + D.engine.name + ', at ' + ds.hp + ' HP.';
+
+    // multiplier chain
+    var lines = [
+      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def, '', fmt(e.raw), false],
+      ['STAB &mdash; ' + (e.stab === 1 ? 'not its type' : (typesOf(A).length === 1 ? 'mono-type' : 'dual-type')), '×' + e.stab, fmt(e.raw * e.stab), e.stab === 1],
+      ['Type &mdash; ' + $('mt').value + ' vs ' + typesOf(D).join('/'), '×' + e.effectiveness, fmt(e.raw * e.stab * e.effectiveness), e.effectiveness === 1],
+      ['Abilities' + (modifier === 1 ? ' &mdash; none active' : ''), '×' + fmt(modifier), fmt(e.raw * e.stab * e.effectiveness * modifier), modifier === 1],
+      ['Critical hit', '×' + e.crit, fmt(e.raw * e.stab * e.effectiveness * modifier * e.crit), e.crit === 1]
+    ];
+    var html = lines.map(function (l) {
+      return '<div class="chain-row' + (l[3] ? ' is-off' : '') + '">' +
+        '<span class="what">' + l[0] + '</span>' +
+        '<span class="mult">' + l[1] + '</span>' +
+        '<span class="run">' + l[2] + '</span></div>';
+    }).join('');
+    html += '<div class="chain-row is-total"><span class="what">Damage dealt</span>' +
+      '<span class="mult">stack ×' + fmt(e.multiplierStack) + '</span>' +
+      '<span class="run">' + e.damage + '</span></div>';
+    $('chain').innerHTML = html;
+
+    // the cliff flag
+    var flag = $('flag');
+    if (e.multiplierStack >= 4.5) {
+      flag.hidden = false;
+      flag.innerHTML = '<span class="mark">!</span><span>The multiplier stack is <b>×' +
+        fmt(e.multiplierStack) + '</b> before the formula runs. Additive type stacking was ' +
+        'adopted to avoid 4× cliffs — a stack this size puts one back. Worth deciding ' +
+        'whether modifiers should cap.</span>';
+    } else {
+      flag.hidden = true;
+    }
+
+    // highlight the live cell
+    Array.prototype.forEach.call(chart.querySelectorAll('.cell'), function (c) {
+      c.classList.toggle('hot',
+        c.dataset.a === $('mt').value && c.dataset.d === D.engine.type1);
+    });
+
+    renderRoster(level);
+  }
+
+  function renderRoster(level) {
+    var head = '<tr><th>Mon</th><th>Stage</th><th>HP</th><th>ATK</th><th>DEF</th>' +
+      '<th>SP.ATK</th><th>SP.DEF</th><th>SPEED</th><th>Base total</th></tr>';
+    var body = MONS.map(function (m) {
+      var s = statsAt(m.engine.stats, level);
+      return '<tr><td class="name">' + m.engine.name +
+        '<span class="type">' + typesOf(m).join('/') + '</span></td>' +
+        '<td>' + m.engine.stage + '</td>' +
+        '<td class="hp">' + s.hp + '</td><td>' + s.atk + '</td><td>' + s.def + '</td>' +
+        '<td>' + s.spa + '</td><td>' + s.spd + '</td><td>' + s.spe + '</td>' +
+        '<td class="tot">' + m.engine.total + '</td></tr>';
+    }).join('');
+    $('roster').innerHTML = head + body;
+  }
+
+  // ---- wiring ------------------------------------------------------------
+
+  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale'].forEach(function (id) {
+    $(id).addEventListener('input', render);
+  });
+
+  [['t-crit', 'crit'], ['t-kindle', 'kindle'], ['t-slow', 'slow']].forEach(function (p) {
+    $(p[0]).addEventListener('click', function () {
+      state[p[1]] = !state[p[1]];
+      this.setAttribute('aria-pressed', String(state[p[1]]));
+      render();
+    });
+  });
+
+  render();
+})();
+</script>

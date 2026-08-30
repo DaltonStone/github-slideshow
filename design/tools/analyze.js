@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-'use strict';
-
 /**
  * Prints the type-chart balance analysis quoted in OPEN_QUESTIONS.md section 1,
  * plus the growth curve landmarks. Everything here is derived from data/ --
@@ -9,7 +7,7 @@
  *   node design/tools/analyze.js
  */
 
-const M = require('../lib/mons.js');
+import * as M from '../lib/rules.js';
 
 const pad = (s, n) => String(s).padEnd(n);
 const rule = (t) => console.log(`\n=== ${t} ===`);

@@ -1,13 +1,13 @@
-'use strict';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('fs');
-const path = require('path');
+import * as M from '../lib/rules.js';
 
-const M = require('../lib/mons.js');
-
-const SPEC = fs.readFileSync(path.join(__dirname, '..', 'SPEC.md'), 'utf8');
+const here = dirname(fileURLToPath(import.meta.url));
+const SPEC = readFileSync(join(here, '..', 'SPEC.md'), 'utf8');
 
 // ---------------------------------------------------------------------------
 // types.json
@@ -446,4 +446,19 @@ test('the roster progress counts in the spec match the data', () => {
     `spec claims a different total than the ${M.MONS.length} in the data`);
   assert.match(SPEC, new RegExp(`Shared abilities \\| ~50–60 \\| ${M.ABILITIES.length} \\|`),
     `spec claims a different ability count than the ${M.ABILITIES.length} in the data`);
+});
+
+// ---------------------------------------------------------------------------
+// generated data
+// ---------------------------------------------------------------------------
+
+test('lib/data.generated.js is in sync with data/*.json', () => {
+  // The browser imports the generated module, Node reads the same thing.
+  // If they drift, the game and the tests silently disagree. Run: npm run build
+  const files = { 'types.json': M.typeData, 'abilities.json': M.abilityData, 'mons.json': M.monData };
+  for (const [file, generated] of Object.entries(files)) {
+    const onDisk = JSON.parse(readFileSync(join(here, '..', 'data', file), 'utf8'));
+    assert.deepEqual(generated, onDisk,
+      `data/${file} has changed since the last build -- run: npm run build`);
+  }
 });
