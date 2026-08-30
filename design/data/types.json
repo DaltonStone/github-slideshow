@@ -1,0 +1,52 @@
+{
+  "$comment": "Canonical type chart. Mirrors SPEC.md sections 1-4. Values are attacker -> defender multipliers; any pair omitted from 'chart' is 1 (normal).",
+  "version": "0.1",
+  "types": [
+    "Normal",
+    "Fire",
+    "Water",
+    "Earth",
+    "Steel",
+    "Psychic",
+    "Dark",
+    "Light",
+    "Dragon",
+    "Phantom"
+  ],
+  "origins": {
+    "Natural": ["Fire", "Water", "Earth", "Normal", "Dragon"],
+    "Made": ["Steel"],
+    "Spirit": ["Psychic", "Dark", "Light", "Phantom"]
+  },
+  "chart": {
+    "Normal":  { "Steel": 0.5, "Phantom": 0 },
+    "Fire":    { "Earth": 2, "Steel": 2, "Fire": 0.5, "Water": 0.5, "Dragon": 0.5 },
+    "Water":   { "Fire": 2, "Steel": 2, "Water": 0.5, "Earth": 0.5, "Dragon": 0.5 },
+    "Earth":   { "Water": 2, "Steel": 2, "Earth": 0.5, "Fire": 0.5, "Dragon": 0.5 },
+    "Steel":   { "Normal": 2, "Fire": 0.5, "Water": 0.5, "Earth": 0.5, "Steel": 0.5, "Dragon": 0.5 },
+    "Psychic": { "Light": 2, "Dragon": 2, "Psychic": 0.5, "Dark": 0.5, "Steel": 0.5, "Normal": 0 },
+    "Dark":    { "Psychic": 2, "Normal": 2, "Phantom": 2, "Dark": 0.5, "Light": 0.5, "Steel": 0.5 },
+    "Light":   { "Dark": 2, "Phantom": 2, "Light": 0.5, "Psychic": 0.5, "Steel": 0.5 },
+    "Dragon":  { "Fire": 2, "Water": 2, "Earth": 2, "Dragon": 2, "Steel": 0.5 },
+    "Phantom": { "Psychic": 2, "Phantom": 2, "Dark": 0.5, "Normal": 0 }
+  },
+  "stacking": {
+    "mode": "additive",
+    "$comment": "Each defending type contributes a percentage; sum, then look up. Immunity on either type short-circuits to 0 and is checked before the sum.",
+    "contribution": { "2": 100, "1": 0, "0.5": -50 },
+    "table": {
+      "200": 3.0,
+      "100": 2.0,
+      "50": 1.5,
+      "0": 1.0,
+      "-50": 0.5,
+      "-100": 0.25
+    },
+    "floorPercent": -100,
+    "immunityMultiplier": 0
+  },
+  "stab": {
+    "mono": 1.5,
+    "dual": 1.25
+  }
+}

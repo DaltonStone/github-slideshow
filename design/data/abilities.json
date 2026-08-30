@@ -1,0 +1,60 @@
+{
+  "$comment": "Shared ability pool. Mirrors SPEC.md section 8. 'effect' is design intent in prose; there is no engine yet to encode it against.",
+  "version": "0.1",
+  "target": "50-60 shared abilities",
+  "abilities": [
+    {
+      "id": "kindling",
+      "name": "Kindling",
+      "category": "signature",
+      "signatureType": "Fire",
+      "effect": "The first attack of the battle deals 1.5x damage."
+    },
+    {
+      "id": "tidewater",
+      "name": "Tidewater",
+      "category": "signature",
+      "signatureType": "Water",
+      "effect": "Heals 1/8 of max HP at end of turn while above half HP."
+    },
+    {
+      "id": "bedrock",
+      "name": "Bedrock",
+      "category": "signature",
+      "signatureType": "Earth",
+      "effect": "Cannot be KO'd from full HP in one hit; survives at 1 HP."
+    },
+
+    { "id": "brawny",     "name": "Brawny",     "category": "stat-bump", "effect": "+3 ATK." },
+    { "id": "sharp-mind", "name": "Sharp Mind", "category": "stat-bump", "effect": "+3 SpA." },
+    { "id": "thick-hide", "name": "Thick Hide", "category": "stat-bump", "effect": "+3 DEF." },
+    { "id": "steady",     "name": "Steady",     "category": "stat-bump", "effect": "+3 SpD." },
+    { "id": "quick-feet", "name": "Quick Feet", "category": "stat-bump", "effect": "+3 SPD." },
+    { "id": "overgrown",  "name": "Overgrown",  "category": "stat-bump", "effect": "+10% max HP." },
+
+    { "id": "fireproof",  "name": "Fireproof",  "category": "immunity", "effect": "Cannot be burned." },
+    { "id": "anchored",   "name": "Anchored",   "category": "immunity", "effect": "Cannot be switched out or moved.", "conflictsWith": ["ambush"] },
+    { "id": "clear-head", "name": "Clear Head", "category": "immunity", "effect": "Immune to confusion and to stat drops." },
+    { "id": "cold-blood", "name": "Cold Blood", "category": "immunity", "effect": "Immune to Dark intimidate effects." },
+    { "id": "grounded",   "name": "Grounded",   "category": "immunity", "effect": "Immune to Earth hazards." },
+
+    { "id": "drink-deep",  "name": "Drink Deep",  "category": "absorb", "effect": "Water moves heal instead of damaging." },
+    { "id": "ember-heart", "name": "Ember Heart", "category": "absorb", "effect": "Fire moves heal instead of damaging." },
+    { "id": "mind-sponge", "name": "Mind Sponge", "category": "absorb", "effect": "Psychic hits raise SpA instead of damaging." },
+
+    { "id": "ambush",    "name": "Ambush",    "category": "tempo", "effect": "Moves first on the turn it enters.", "conflictsWith": ["anchored", "windup"] },
+    { "id": "slow-burn", "name": "Slow Burn", "category": "tempo", "effect": "Always moves last; deals +20% damage." },
+    { "id": "windup",    "name": "Windup",    "category": "tempo", "effect": "-3 SPD; moves first on every 3rd turn.", "conflictsWith": ["ambush"] },
+
+    { "id": "last-stand", "name": "Last Stand", "category": "survival", "effect": "Below 1/3 HP, ATK and SpA are raised 50%." },
+    { "id": "thorns",     "name": "Thorns",     "category": "survival", "effect": "An attacker making contact takes 1/8 of its own max HP." },
+    { "id": "grudge",     "name": "Grudge",     "category": "survival", "effect": "On being KO'd, the killing move loses all remaining uses." },
+
+    { "id": "colony", "name": "Colony", "category": "hook", "effect": "Has bodies instead of HP; each body lost is one fewer hit it can make." },
+    { "id": "royal",  "name": "Royal",  "category": "hook", "effect": "Allied Swarm mons regain one body at end of turn." },
+    { "id": "built",  "name": "Built",  "category": "hook", "effect": "Immune to poison, burn and sleep; takes 1.5x damage from Water." },
+    { "id": "unreal", "name": "Unreal", "category": "hook", "effect": "Immune to Normal moves." },
+
+    { "id": "lucky-day", "name": "Lucky Day", "category": "chaos", "effect": "On any turn whose count is a multiple of 7, always moves first and always crits." }
+  ]
+}
