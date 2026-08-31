@@ -467,6 +467,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         <div class="hero-num" id="dmg">0</div>
         <div class="hero-sub" id="kos"></div>
         <div class="hero-sub" id="critline"></div>
+        <div class="hero-sub" id="enko"></div>
       </div>
 
       <div>
@@ -492,7 +493,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
       <div class="field">
         <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
         <input id="scale" type="range" min="40" max="220" step="5" value="100">
-        <p class="panel-note" style="margin-top:8px">Energy and stamina both persist between battles, so a full mon has about 18 turns of fighting in it. Exhausted is a floor &mdash; penalties stop deepening there.</p>
+        <p class="panel-note" style="margin-top:8px">Energy and stamina both persist between battles, and <b>energy hitting zero is a knockout</b> &mdash; it is a second health bar. A full mon has 18 turns of fighting; Exhausted has about two. Out of stamina, a mon Struggles: 25 power, typeless, 50% recoil.</p>
         <p class="panel-note" style="margin-top:8px">Crit chance runs 5% at L1 to 15% at L60, then stays flat. Crit damage is &times;1.5 and is still a placeholder &mdash; the design gives the chance curve, not the multiplier.</p>
       </div>
     </div>
@@ -1591,7 +1592,7 @@ const mechanicsData = {
         "statMultiplier": 0.7,
         "accuracyMultiplier": 0.85,
         "moveCostMultiplier": 1.5,
-        "canBattle": false
+        "knockedOut": true
       }
     ],
     "$floorNote": "Exhausted is the FLOOR -- penalties stop deepening there, and Empty is no worse except that the mon cannot battle at all. Without this, low energy lowering stats and accuracy while raising cost is a positive feedback loop into losing.",
@@ -1600,8 +1601,12 @@ const mechanicsData = {
       "fullRestAtBase": true,
       "itemsRestorePartial": true,
       "benchRegenPerBattle": 5,
-      "$benchNote": "A mon not in the active slot recovers a little each battle. This makes ROTATION the core management verb rather than item-spam."
-    }
+      "$benchNote": "A mon not in the active slot recovers a little each battle. This makes ROTATION the core management verb rather than item-spam.",
+      "supportsRestoreBoth": true,
+      "$supportNote": "Support mons can restore energy AND stamina. This is the in-battle answer to attrition and gives Light and Psychic a job that is always live, which Light in particular needed."
+    },
+    "emptyResult": "knockout",
+    "$emptyNote": "Energy reaching 0 KNOCKS THE MON OUT. Energy is therefore a second health bar, not a soft debuff -- there are two ways to lose a mon, and the Exhausted tier is genuinely dangerous rather than merely inconvenient."
   },
   "affection": {
     "status": "unspecified",
@@ -1637,7 +1642,21 @@ const mechanicsData = {
     "perMove": true,
     "maxUses": null,
     "$maxUsesNote": "Per-move data. Moves do not exist yet, so there is nothing to put here.",
-    "restoration": "Same channels as energy: rest at base, items, and bench recovery."
+    "restoration": "Same channels as energy: rest at base, items, and bench recovery.",
+    "emptyResult": "struggle"
+  },
+  "struggle": {
+    "status": "proposed",
+    "$comment": "What a mon does when every move is out of stamina. PROPOSED -- the design says 'a weak attack that deals recoil damage'; the numbers and the typing question are mine.",
+    "power": 25,
+    "recoilFractionOfDamageDealt": 0.5,
+    "type": null,
+    "$typeNote": "PROPOSED TYPELESS -- no STAB, no type effectiveness. If Struggle were Normal-typed it would deal ZERO to Phantom (Normal -> Phantom is 0), so a mon out of stamina could not touch a Phantom at all and both would sit there until energy killed them. Typeless avoids that dead end.",
+    "delivery": "body",
+    "$deliveryNote": "Contact, so Thorns punishes a flailing mon. A desperate lunge should hurt to make.",
+    "costsStamina": false,
+    "costsEnergy": true,
+    "$costNote": "Struggle still burns energy, so running out of stamina accelerates the run toward the energy KO."
   }
 };
 
@@ -2052,8 +2071,15 @@ function tierFor(current, max = MAX_ENERGY) {
       ?? TIERS.find((t) => t.id === 'exhausted');
 }
 
-/** Can this mon take the field at all? */
-const canBattle = (current, max = MAX_ENERGY) => tierFor(current, max).canBattle !== false;
+/**
+ * Energy at zero KNOCKS THE MON OUT. Energy is a second health bar, not a soft
+ * debuff -- which is what makes the Exhausted tier dangerous rather than merely
+ * inconvenient.
+ */
+const isKnockedOut = (current, max = MAX_ENERGY) => tierFor(current, max).knockedOut === true;
+
+/** Can this mon take the field at all? False only once it is knocked out. */
+const canBattle = (current, max = MAX_ENERGY) => !isKnockedOut(current, max);
 
 /**
  * Every stat scaled by the energy tier. HP is left alone -- energy should make
@@ -2090,16 +2116,25 @@ function spendTurn(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY)
 }
 
 /** Energy a benched mon gets back after a battle it sat out. */
+/** What a mon does when every move is out of stamina. */
+const STRUGGLE = mechanicsData.struggle;
+
+/** Recoil a Struggle deals back to its user, from the damage it dealt. */
+function struggleRecoil(damageDealt) {
+  if (damageDealt < 0) throw new SpecError(`damage cannot be negative, got ${damageDealt}`);
+  return Math.max(1, Math.floor(damageDealt * STRUGGLE.recoilFractionOfDamageDealt));
+}
+
 function benchRecover(current, max = MAX_ENERGY) {
   return Math.min(max, current + ENERGY.restoration.benchRegenPerBattle);
 }
 
 /**
- * How many turns a mon can keep fighting from its current energy, using a
- * move of the given base cost every turn. This is the number that decides
- * whether a team can finish a run.
+ * Turns until this mon is knocked out by exhaustion, using a move of the given
+ * base cost every turn. Since energy hitting zero is a KO, this is a countdown
+ * to death, not to a rest.
  */
-function turnsRemaining(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY) {
+function turnsUntilKO(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY) {
   let e = current;
   let turns = 0;
   while (e > 0 && turns < 1000) {
@@ -2197,7 +2232,7 @@ function turnsRemaining(current, baseCost = ENERGY.defaultMoveCost, max = MAX_EN
     var ds = statsAt(D.engine.stats, level);
 
     $('env').textContent = energy;
-    $('entier').textContent = tier.name;
+    $('entier').textContent = tier.knockedOut ? 'KNOCKED OUT' : tier.name;
 
     var modifier = (state.kindle ? 1.5 : 1) * (state.slow ? 1.2 : 1);
 
@@ -2216,6 +2251,11 @@ function turnsRemaining(current, baseCost = ENERGY.defaultMoveCost, max = MAX_EN
 
     $('dmg').textContent = e.damage;
 
+    var toKO = turnsUntilKO(energy);
+    $('enko').innerHTML = tier.knockedOut
+      ? 'Out of the fight.'
+      : '<b>' + toKO + '</b> turn' + (toKO === 1 ? '' : 's') + ' of fighting left before exhaustion KOs it.';
+
     var p = critChance(level);
     var exp = expectedDamage(args, level);
     $('critline').innerHTML = state.crit
@@ -2224,8 +2264,8 @@ function turnsRemaining(current, baseCost = ENERGY.defaultMoveCost, max = MAX_EN
         ' &mdash; <b>' + Math.round(exp) + '</b> expected once the roll is counted.';
 
     var hits = hitsToKO(ds.hp, e.damage);
-    $('kos').innerHTML = tier.canBattle === false
-      ? '<b>' + A.engine.name + ' is Empty</b> and cannot take the field. This is what the hit would do if it could.'
+    $('kos').innerHTML = tier.knockedOut
+      ? '<b>' + A.engine.name + ' is knocked out</b> — energy hit zero. This is what the hit would have done.'
       : e.damage === 0
         ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
         : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +

@@ -106,7 +106,7 @@ test('energy never goes negative', () => {
 });
 
 test('a full mon gets a run of battles, not one', () => {
-  const turns = E.turnsRemaining(100, ENERGY.defaultMoveCost);
+  const turns = E.turnsUntilKO(100, ENERGY.defaultMoveCost);
   assert.ok(turns >= 12 && turns <= 30,
     `${turns} turns from full; expected enough for several battles but not endless`);
 });
@@ -114,7 +114,7 @@ test('a full mon gets a run of battles, not one', () => {
 test('less energy means fewer turns, monotonically', () => {
   let prev = 0;
   for (const e of [10, 25, 50, 75, 100]) {
-    const t = E.turnsRemaining(e);
+    const t = E.turnsUntilKO(e);
     assert.ok(t >= prev, `${e} energy gave ${t} turns, less than a lower start`);
     prev = t;
   }
@@ -122,7 +122,7 @@ test('less energy means fewer turns, monotonically', () => {
 
 test('turnsRemaining always terminates, even at the cost floor', () => {
   // The cost multiplier is capped, so drain per turn cannot fall to zero.
-  assert.ok(E.turnsRemaining(100, 0) < 1000, 'a zero-cost move must still drain per-turn');
+  assert.ok(E.turnsUntilKO(100, 0) < 1000, 'a zero-cost move must still drain per-turn');
 });
 
 test('benched mons recover, and never past full', () => {
@@ -174,4 +174,86 @@ test('the proxy rule records what it does not yet settle', () => {
   const proxy = M.mechanicsData.proxy;
   assert.ok(Array.isArray(proxy.openRules) && proxy.openRules.length >= 3,
     'an absolute rule with this much reach needs its edge cases written down');
+});
+
+// ---------------------------------------------------------------------------
+// Empty is death, not a rest
+// ---------------------------------------------------------------------------
+
+test('energy at zero knocks the mon out', () => {
+  assert.equal(E.isKnockedOut(0), true);
+  assert.equal(E.isKnockedOut(1), false);
+  assert.equal(E.canBattle(0), false);
+  assert.equal(E.canBattle(1), true);
+});
+
+test('energy is a second health bar: there are two ways to lose a mon', () => {
+  const e = M.mechanicsData.energy;
+  assert.equal(e.emptyResult, 'knockout');
+  assert.ok(e.$emptyNote.includes('second health bar'));
+});
+
+test('the Exhausted tier is a real warning: only a couple of turns from death', () => {
+  // The tier names have to mean something. Exhausted must be close to the end,
+  // or the player gets no signal before losing the mon.
+  const fromExhausted = E.turnsUntilKO(10);
+  assert.ok(fromExhausted >= 1 && fromExhausted <= 4,
+    `Exhausted gives ${fromExhausted} turns; it should read as imminent`);
+  assert.ok(E.turnsUntilKO(100) > fromExhausted * 4,
+    'a full mon should be nowhere near the KO');
+});
+
+test('the floor keeps the last stretch survivable rather than instant', () => {
+  // Without the cost cap, the cost multiplier would climb as energy fell and
+  // the final tier would vanish in one turn.
+  assert.ok(E.turnsUntilKO(10) > 1, 'Exhausted should not be a single turn');
+});
+
+// ---------------------------------------------------------------------------
+// Struggle
+// ---------------------------------------------------------------------------
+
+test('running out of stamina gives Struggle, not nothing', () => {
+  assert.equal(M.mechanicsData.stamina.emptyResult, 'struggle');
+  assert.ok(E.STRUGGLE.power > 0);
+});
+
+test('Struggle is weak and hurts to use', () => {
+  assert.ok(E.STRUGGLE.power < 40, 'Struggle should be a weak attack');
+  assert.ok(E.STRUGGLE.recoilFractionOfDamageDealt > 0, 'Struggle must cost the user');
+  assert.equal(E.struggleRecoil(40), 20);
+  assert.equal(E.struggleRecoil(1), 1, 'recoil should never round away to nothing');
+  assert.throws(() => E.struggleRecoil(-1), M.SpecError);
+});
+
+test('Struggle is typeless, so it can still hit a Phantom', () => {
+  // Normal -> Phantom is 0. A Normal-typed Struggle would mean a mon out of
+  // stamina literally could not touch a Phantom, and both would stand there
+  // until energy killed them.
+  assert.equal(E.STRUGGLE.type, null);
+  assert.equal(M.chartValue('Normal', 'Phantom'), 0,
+    'this is the trap the typeless choice avoids');
+});
+
+test('Struggle costs energy but not stamina, so running dry hastens the KO', () => {
+  assert.equal(E.STRUGGLE.costsStamina, false);
+  assert.equal(E.STRUGGLE.costsEnergy, true);
+});
+
+test('Struggle makes contact, so Thorns punishes a flailing mon', () => {
+  assert.equal(M.makesContact(E.STRUGGLE.delivery), true);
+});
+
+// ---------------------------------------------------------------------------
+// Supports are the answer to attrition
+// ---------------------------------------------------------------------------
+
+test('supports can restore both resources', () => {
+  assert.equal(ENERGY.restoration.supportsRestoreBoth, true);
+});
+
+test('support restoration gives Light the always-live job it needed', () => {
+  // Light is a pure counter-type otherwise: brilliant against rule-alteration,
+  // dead against anything else. Restoring energy and stamina is a floor.
+  assert.ok(ENERGY.restoration.$supportNote.includes('Light'));
 });

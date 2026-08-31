@@ -43,8 +43,15 @@ export function tierFor(current, max = MAX_ENERGY) {
       ?? TIERS.find((t) => t.id === 'exhausted');
 }
 
-/** Can this mon take the field at all? */
-export const canBattle = (current, max = MAX_ENERGY) => tierFor(current, max).canBattle !== false;
+/**
+ * Energy at zero KNOCKS THE MON OUT. Energy is a second health bar, not a soft
+ * debuff -- which is what makes the Exhausted tier dangerous rather than merely
+ * inconvenient.
+ */
+export const isKnockedOut = (current, max = MAX_ENERGY) => tierFor(current, max).knockedOut === true;
+
+/** Can this mon take the field at all? False only once it is knocked out. */
+export const canBattle = (current, max = MAX_ENERGY) => !isKnockedOut(current, max);
 
 /**
  * Every stat scaled by the energy tier. HP is left alone -- energy should make
@@ -81,16 +88,25 @@ export function spendTurn(current, baseCost = ENERGY.defaultMoveCost, max = MAX_
 }
 
 /** Energy a benched mon gets back after a battle it sat out. */
+/** What a mon does when every move is out of stamina. */
+export const STRUGGLE = mechanicsData.struggle;
+
+/** Recoil a Struggle deals back to its user, from the damage it dealt. */
+export function struggleRecoil(damageDealt) {
+  if (damageDealt < 0) throw new SpecError(`damage cannot be negative, got ${damageDealt}`);
+  return Math.max(1, Math.floor(damageDealt * STRUGGLE.recoilFractionOfDamageDealt));
+}
+
 export function benchRecover(current, max = MAX_ENERGY) {
   return Math.min(max, current + ENERGY.restoration.benchRegenPerBattle);
 }
 
 /**
- * How many turns a mon can keep fighting from its current energy, using a
- * move of the given base cost every turn. This is the number that decides
- * whether a team can finish a run.
+ * Turns until this mon is knocked out by exhaustion, using a move of the given
+ * base cost every turn. Since energy hitting zero is a KO, this is a countdown
+ * to death, not to a rest.
  */
-export function turnsRemaining(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY) {
+export function turnsUntilKO(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY) {
   let e = current;
   let turns = 0;
   while (e > 0 && turns < 1000) {

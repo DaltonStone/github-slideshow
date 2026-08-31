@@ -379,26 +379,56 @@ Numbers are a first cut; the shape is the part to argue with.
 | Worn | 31–60 | ×0.90 | ×0.95 | ×1.10 | |
 | Spent | 11–30 | ×0.80 | ×0.90 | ×1.25 | |
 | **Exhausted** | **1–10** | **×0.70** | **×0.85** | **×1.50** | **floor** |
-| Empty | 0 | ×0.70 | ×0.85 | ×1.50 | cannot battle |
+| Empty | 0 | — | — | — | **knocked out** |
 
-Energy scales the five fighting stats. **HP is never touched** — energy should
-make a mon fight worse, not shrink its health bar mid-run.
+**Energy reaching 0 knocks the mon out.** Energy is a *second health bar*, not a
+soft debuff: there are two ways to lose a mon, and Exhausted is a genuine
+warning rather than an inconvenience — from Exhausted a mon has about **two
+turns** before it drops, against 18 from full.
+
+Energy scales the five fighting stats. **HP is never touched** — energy is its
+own bar and should not move the other one.
 
 **Exhausted is a hard floor and it is the load-bearing part.** Falling energy
 lowers stats *and* accuracy *and* raises move cost — a feedback loop straight
-into losing, and with persistence a single bad fight would tax the whole run.
-Below Exhausted the penalties stop deepening; Empty is no worse, it simply
-cannot take the field.
+into losing, and since the bottom of it is a KO, an uncapped loop would make the
+last stretch vanish in a single turn. The floor is what keeps the endgame
+playable instead of instant.
 
 At 2 energy per turn plus a 3-cost move, a full mon has **18 turns of fighting**
 — several battles, not one, and not endless.
 
-### 10.2 Restoration — PROPOSED
+### 10.2 Out of stamina: Struggle — PROPOSED
 
-Full rest at a base, partial restoration from items, and **benched mons recover
-5 per battle they sit out**. That last one is deliberate: it makes **rotation**
-the core management verb rather than item-spam, and it is why party size now
-matters to the combat math.
+A mon with no stamina left on any move **Struggles**: a weak attack that deals
+recoil damage to its user.
+
+| | |
+|---|---|
+| Power | 25 |
+| Recoil | 50% of the damage dealt |
+| Type | **typeless** — no STAB, no type effectiveness |
+| Delivery | Body, so it makes contact |
+| Costs | Energy yes, stamina no |
+
+Typeless is deliberate. A Normal-typed Struggle would deal **zero** to a Phantom
+(§2: Normal → Phantom is 0), so a mon out of stamina could not touch a Phantom at
+all and the two would stand there until energy killed them both. Typeless avoids
+the dead end.
+
+It still burns energy, so **running dry on stamina hastens the energy KO** — the
+two resources fail into each other rather than independently.
+
+### 10.3 Restoration — PROPOSED
+
+Full rest at a base, partial restoration from items, **benched mons recover 5 per
+battle they sit out**, and **support mons can restore both energy and stamina**.
+
+Bench recovery makes **rotation** the management verb rather than item-spam, and
+is why party size now matters to the combat math. Support restoration is the
+in-battle answer to attrition — and it hands Light the always-live job it needed:
+otherwise a pure counter-type, brilliant against rule-alteration and dead against
+anything else.
 
 ---
 
@@ -460,8 +490,10 @@ The JSON encoding of this template is documented in
   not species data. Persistence was never in doubt; what is open is whether it
   applies in competitive play. See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.2.
 - **Per-move stamina and energy costs**, which are move data.
-- **Restoration**: items, resting, and where a run resets. Proposed in
-  [`data/mechanics.json`](data/mechanics.json); nothing is decided.
+- **How much supports restore, and at what cost.** If a support can refill a
+  pool freely, energy stops binding and §10 stops meaning anything.
+- **Where a run resets**: towns, camps, a limited number of rests. The scarcity
+  of restoration *is* the difficulty curve.
 - **Party size**, which persistent energy makes load-bearing — rotation is the
   intended answer to a tiring team, and that only works if there is a bench.
 

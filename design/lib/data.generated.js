@@ -1051,7 +1051,7 @@ export const mechanicsData = {
         "statMultiplier": 0.7,
         "accuracyMultiplier": 0.85,
         "moveCostMultiplier": 1.5,
-        "canBattle": false
+        "knockedOut": true
       }
     ],
     "$floorNote": "Exhausted is the FLOOR -- penalties stop deepening there, and Empty is no worse except that the mon cannot battle at all. Without this, low energy lowering stats and accuracy while raising cost is a positive feedback loop into losing.",
@@ -1060,8 +1060,12 @@ export const mechanicsData = {
       "fullRestAtBase": true,
       "itemsRestorePartial": true,
       "benchRegenPerBattle": 5,
-      "$benchNote": "A mon not in the active slot recovers a little each battle. This makes ROTATION the core management verb rather than item-spam."
-    }
+      "$benchNote": "A mon not in the active slot recovers a little each battle. This makes ROTATION the core management verb rather than item-spam.",
+      "supportsRestoreBoth": true,
+      "$supportNote": "Support mons can restore energy AND stamina. This is the in-battle answer to attrition and gives Light and Psychic a job that is always live, which Light in particular needed."
+    },
+    "emptyResult": "knockout",
+    "$emptyNote": "Energy reaching 0 KNOCKS THE MON OUT. Energy is therefore a second health bar, not a soft debuff -- there are two ways to lose a mon, and the Exhausted tier is genuinely dangerous rather than merely inconvenient."
   },
   "affection": {
     "status": "unspecified",
@@ -1097,6 +1101,20 @@ export const mechanicsData = {
     "perMove": true,
     "maxUses": null,
     "$maxUsesNote": "Per-move data. Moves do not exist yet, so there is nothing to put here.",
-    "restoration": "Same channels as energy: rest at base, items, and bench recovery."
+    "restoration": "Same channels as energy: rest at base, items, and bench recovery.",
+    "emptyResult": "struggle"
+  },
+  "struggle": {
+    "status": "proposed",
+    "$comment": "What a mon does when every move is out of stamina. PROPOSED -- the design says 'a weak attack that deals recoil damage'; the numbers and the typing question are mine.",
+    "power": 25,
+    "recoilFractionOfDamageDealt": 0.5,
+    "type": null,
+    "$typeNote": "PROPOSED TYPELESS -- no STAB, no type effectiveness. If Struggle were Normal-typed it would deal ZERO to Phantom (Normal -> Phantom is 0), so a mon out of stamina could not touch a Phantom at all and both would sit there until energy killed them. Typeless avoids that dead end.",
+    "delivery": "body",
+    "$deliveryNote": "Contact, so Thorns punishes a flailing mon. A desperate lunge should hurt to make.",
+    "costsStamina": false,
+    "costsEnergy": true,
+    "$costNote": "Struggle still burns energy, so running out of stamina accelerates the run toward the energy KO."
   }
 };

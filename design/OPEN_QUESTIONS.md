@@ -265,46 +265,69 @@ undefined condition cannot be balanced or implemented.
 
 ## 6. The new systems
 
-### 6.1 Energy — ANSWERED: it persists. What that costs.
+### 6.1 Energy — ANSWERED, and it is a second health bar
 
-**Energy persists between battles**, and so does stamina. That is settled, and it
-is the largest structural decision in the project so far: MONS is a
-resource-management game, not a game of independent battles. A model is proposed
-in [`lib/energy.js`](lib/energy.js) and SPEC §10 — tiers, a mandatory floor at
-Exhausted, and bench recovery so that rotation is the management verb.
+Settled: **energy and stamina persist between battles**, **energy at 0 knocks the
+mon out**, **no stamina means Struggle**, and **supports can restore both**.
+Modelled in [`lib/energy.js`](lib/energy.js) and SPEC §10.
 
-What persistence now obliges the design to answer:
+That third answer is bigger than it looks. Energy is not a debuff track, it is a
+**second health bar** — there are now two independent ways to lose a mon, and the
+fail state that §6.1 previously called "the most important undefined rule in the
+game" is answered at the mon level: you do not soft-lock, you lose the mon.
 
-1. **What is the fail state?** A team can run out. Something must happen when it
-   does — forced return to base, a long rest that costs in-world time, or mons
-   that can still act at Empty in some reduced way. Right now Empty simply means
-   "cannot battle", which for a whole party is a soft-lock. **This is the most
-   important undefined rule in the game.**
-2. **Party size**, which was cosmetic and is now load-bearing. Bench recovery
-   only works if there is a bench, and the size of it sets how forgiving a run
-   is. Six is the genre default; three would make energy bite hard.
-3. **Where does a run reset?** Towns, camps, a limited number of rests. This is
-   the difficulty curve — the scarcity of restoration *is* the difficulty, more
-   than any enemy statline.
-4. **Per-move energy costs.** Move data; moves do not exist. A cheap weak move
-   versus an expensive strong one is now a real decision, which is a good axis
-   the design should use deliberately.
+#### What being a health bar implies
 
-#### Two consequences worth noticing
+1. **Energy drain is a win condition.** Anything that drains an opponent's energy
+   is a kill route that bypasses HP entirely — no damage formula, no type chart,
+   no defensive stat. If any move or ability does this, it needs the same scrutiny
+   an OHKO move gets. It is also, notably, a *much* better home for Phantom's
+   "insta-kills with conditions" than a coin-flip: draining a target to zero is
+   deterministic, visible, and playable-around.
+2. **How much supports restore is now a balance-critical number.** Supports can
+   refill a health bar. If restoration is cheap or uncapped, energy stops binding
+   and §10 stops meaning anything; if it is too weak, attrition is unbeatable.
+   This is the single most important number left in the resource system.
+3. **The floor stopped being a nicety.** With a KO at the bottom, an uncapped
+   cost multiplier would make the last tier disappear in one turn. The cap at
+   ×1.5 keeps Exhausted at about **two turns** — enough to read the warning and
+   act, which is what makes the tier names worth having.
 
-**It validates the type roles.** Sustain (Earth, Water), support and healing
-(Light), and durability (Steel) are all worth more in a persistent-resource game
-than they would be in a game of isolated fights — they do not just win the
-battle, they save the run. Meanwhile the "frail, needs setup, and luck" types —
-**Phantom especially** — get harsher: a failed setup now costs resources that do
-not come back this battle *or* the next one. Variance is more expensive when
-resources persist. That is a coherent design, but Phantom is already the weakest
-defensive type, and this is a third tax on it.
+#### Struggle has one trap, avoided
 
-**Grinding becomes the balance risk.** With persistence, a player who takes it
-slow and rests often is strictly stronger than one who pushes. If the game has
-any competitive dimension, energy state has to be normalised for it, the same
-question §6.2 raises about affection.
+Struggle is proposed **typeless**. If it were Normal-typed it would deal zero to
+a Phantom (Normal → Phantom is 0), so a mon out of stamina could not touch a
+Phantom at all — the two would stand there until energy killed them both. Worth
+confirming, since it is the kind of interaction that only shows up in play.
+
+It also makes contact (Body), so `Thorns` punishes a flailing mon, and it costs
+energy, so **the two resources fail into each other**: running dry on stamina
+speeds up the energy KO rather than being a separate problem.
+
+#### Still open
+
+- **Party size**, still load-bearing and still undecided. Bench recovery only
+  works if there is a bench, and its size sets how forgiving a run is. Six is the
+  genre default; three would make energy bite hard.
+- **Where a run resets.** Restoration scarcity is the difficulty curve, more than
+  any enemy statline.
+- **Per-move energy and stamina costs** — move data, and a good axis: a cheap
+  weak move versus an expensive strong one is a real decision the design should
+  use deliberately.
+- **Does anything drain energy directly?** See point 1. This wants deciding
+  before moves are written, not after.
+
+#### Two consequences for the roster
+
+**It validates the support and sustain roles.** Light, Psychic, Earth and Water
+are not just winning fights, they are keeping the run alive — and support
+restoration is exactly the always-live floor Light needed as a pure counter-type.
+
+**It taxes Phantom a third time.** "Frail, needs setup and luck" costs much more
+when a failed setup burns resources that do not come back this battle *or* the
+next. Phantom is already the weakest defensive type with the most conditional
+role. Unless energy drain becomes its kill route — in which case persistence
+turns from Phantom's third tax into its whole identity.
 
 ### 6.2 Affection — still open
 
