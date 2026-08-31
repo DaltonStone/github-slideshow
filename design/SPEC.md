@@ -28,11 +28,6 @@ Ten types:
 | 9 | Dragon  | Natural |
 | 10 | Phantom | Spirit |
 
-> **Note:** a later type list gave nine types and omitted Phantom, but four
-> creatures in the same roster are Phantom-typed (Toll, Jaxs, BellDum,
-> BellGarde). Phantom is treated as still in the game. See
-> [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §9.1.
-
 **Origins** are flavor groupings, not a mechanic:
 
 - **Natural** — Fire, Water, Earth, Normal, Dragon
@@ -204,6 +199,38 @@ bulky and frail mons as the game goes on.
 This means a level advantage is worth exactly the stats it buys and nothing
 more, and an underlevelled mon with a type advantage stays relevant.
 
+### 5.1 In-battle stat modifiers
+
+Abilities and moves apply **modifiers** to a stat for the length of a battle.
+They are multipliers, not permanent changes — stored stats are never touched and
+everything clears when the battle ends.
+
+```
+multiplier = max(0.25, 1 + sum of active modifiers on that stat)
+```
+
+The number written on an ability is the fraction it adds:
+
+| Modifier | Multiplier | Reading | Source |
+|---|---|---|---|
+| **+0.25** | ×1.25 | +25% | Aspect of Flame, per BURN applied |
+| +2 | ×3.00 | +200% | Moving Waters, in WATER terrain |
+| +4 | ×5.00 | +400% | Layered Stone, at battle start |
+| −0.25 | ×0.75 | −25% | |
+| **−1** | **×0.25** | −75% | **floored** — the plain rule gives 0 |
+
+Modifiers on the same stat **add before they multiply**, so four of Aspect of
+Flame's quarters is ×2, not ×2.44.
+
+**The floor is proposed.** `1 + (−1)` is exactly zero, which would delete a stat
+outright, so it is clamped at 0.25 — the same floor the type chart uses, to keep
+one convention across the game. The other plausible shape for negatives is
+`1/(1+|sum|)`, which halves at −1 instead. See
+[`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §9.5.
+
+HP never carries a modifier: these are battle-length effects and should not move
+a health bar mid-fight.
+
 ---
 
 ## 6. Starters and roster
@@ -265,8 +292,9 @@ since Dark is also the second-strongest type on the chart
 VisBee → VisGarde is a normal evolution (Earth, then Earth/Dark). VisBeeQueen is
 Dark/Psychic — it **drops Earth**, which every other rule in this document
 forbids an evolution from doing, and it carries no evolution marker. It is
-recorded as a separate creature rather than a stage. Given `Colony` and `Royal`
-already exist in the ability list, a **caste** is the likely intent. Unresolved.
+recorded as a separate creature rather than a stage. With Swarm removed there is
+no caste system to belong to, so it is most likely either a **branch evolution**
+from VisBee or simply a third, related creature. Unresolved.
 
 ## 7. Type stat defaults
 
@@ -329,12 +357,13 @@ Dark intimidate effects) · `Grounded` (immune to Earth hazards)
 contact attacker takes 1/8 of its own max HP) · `Grudge` (on being KO'd, the
 killing move loses all remaining uses)
 
-**Hook** — these come with a body of rules attached and mark a mon as belonging
-to a special group:
-`Colony` (has bodies instead of HP; each body lost is one fewer hit) ·
-`Royal` (allied Swarm mons regain one body at end of turn) ·
+**Hook** — these come with a body of rules attached:
 `Built` (immune to poison, burn and sleep; takes 1.5× from Water) ·
 `Unreal` (immune to Normal moves)
+
+There is **no Swarm system**. A creature made of many bodies — Stilta's five
+little guys, Pilliduns combining — is one creature with one HP pool, like
+everything else. The concept is flavour, not a parallel damage model.
 
 **Chaos** — `Lucky Day` (on any turn whose count is a multiple of 7: always
 moves first, always crits)
@@ -541,7 +570,7 @@ The JSON encoding of this template is documented in
 |---|---|---|
 | Creatures named | 60+ | 30 |
 | Fully authored | 30 | 0 |
-| Abilities | ~50–60 | 31 |
+| Abilities | ~50–60 | 29 |
 | Move pools | TBD | not started |
 | Support cards | up to 30 held | not started |
 
@@ -561,8 +590,8 @@ authored. `data/mons.json` marks each with `status`.
   learnset.
 - **Status conditions.** Several abilities reference burn, poison, sleep and
   confusion; none of those are defined.
-- **Catching**, party size, switching, held items, the Swarm/`Colony` body
-  system, and hazards (`Grounded` implies Earth hazards exist).
+- **Catching**, switching, held items, and hazards (`Grounded` implies Earth
+  hazards exist).
 - **Affection.** How attached a mon is to its trainer, modifying stats by
   affection points and level with extra effects at maximum. Per-instance state,
   not species data. Persistence was never in doubt; what is open is whether it

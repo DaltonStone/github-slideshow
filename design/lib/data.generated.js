@@ -286,18 +286,6 @@ export const abilityData = {
       "effect": "On being KO'd, the killing move loses all remaining uses."
     },
     {
-      "id": "colony",
-      "name": "Colony",
-      "category": "hook",
-      "effect": "Has bodies instead of HP; each body lost is one fewer hit it can make."
-    },
-    {
-      "id": "royal",
-      "name": "Royal",
-      "category": "hook",
-      "effect": "Allied Swarm mons regain one body at end of turn."
-    },
-    {
       "id": "built",
       "name": "Built",
       "category": "hook",
@@ -320,7 +308,7 @@ export const abilityData = {
       "name": "Aspect of Flame",
       "category": "signature",
       "signatureType": "Fire",
-      "effect": "Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to any creature, gain 0.25 SPD.",
+      "effect": "Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to any creature, gain a +0.25 SPD modifier (+25% SPD).",
       "$note": "Starter signature: Candelite line. Reads other creatures' burns too, not just its own -- it gets faster as the whole field burns."
     },
     {
@@ -328,7 +316,7 @@ export const abilityData = {
       "name": "Moving Waters",
       "category": "signature",
       "signatureType": "Water",
-      "effect": "While WATER terrain is active, gain +2 SPD, and Water moves have a 30% chance to lower the target's S.DEF by 1.",
+      "effect": "While WATER terrain is active, gain a +2 SPD modifier (x3 SPD), and Water moves have a 30% chance to apply a -1 S.DEF modifier to the target.",
       "$note": "Starter signature: Merling line. Conditional on terrain, which nothing yet creates."
     },
     {
@@ -336,7 +324,7 @@ export const abilityData = {
       "name": "Layered Stone",
       "category": "signature",
       "signatureType": "Earth",
-      "effect": "Gain +4 DEF at the start of battle. Lose 1 DEF from this ability each time a super-effective move connects.",
+      "effect": "Gain a +4 DEF modifier (x5 DEF) at the start of battle. Lose 1 from this modifier each time a super-effective move connects, so four super-effective hits strip it entirely.",
       "$note": "Starter signature: Bouldur line. Erodes rather than expiring -- four super-effective hits strip it entirely."
     }
   ]
@@ -1754,9 +1742,37 @@ export const mechanicsData = {
     "blockedOn": "Nothing in the roster or ability list CREATES terrain yet, so Moving Waters is currently a dead ability. What sets WATER terrain, how long does it last, and can more than one terrain be active?"
   },
   "statModification": {
-    "status": "shape-only",
-    "$comment": "The new starter abilities modify stats in three different grains: +4 DEF, +2 SPD, 0.25 SPD, and 'lower S.DEF by 1'.",
-    "blockedOn": "Are these flat points on the stat, or stages on a multiplier ladder? v0.1 abilities used flat points (+3 ATK), which suggests flat -- but 'lower S.DEF by 1' reads like a stage, and 0.25 only makes sense as a fraction of something.",
-    "$why": "With base stats this small (13-27 SPD on a basic), +2 flat is a large bonus and 0.25 flat is nearly nothing until it stacks. The two readings give very different balance."
+    "status": "proposed",
+    "$comment": "Abilities and moves apply MODIFIERS to a stat for the duration of a battle. They are multipliers, not permanent stat changes, and they do not touch the creature's stored stats.",
+    "rule": "multiplier = max(floor, 1 + sum of active modifiers on that stat)",
+    "floor": 0.25,
+    "$floorNote": "PROPOSED. The stated rule gives -1 a multiplier of exactly 0, which would zero a stat. The floor is 0.25, matching the type chart's floor, so the worst case is a quarter of the stat rather than none of it. The alternative shape for negatives is 1/(1+|sum|), which makes -1 a halving instead; unconfirmed either way.",
+    "examples": [
+      {
+        "modifier": 0.25,
+        "multiplier": 1.25,
+        "source": "Aspect of Flame, per BURN applied",
+        "reading": "+25% SPD"
+      },
+      {
+        "modifier": 2,
+        "multiplier": 3,
+        "source": "Moving Waters in WATER terrain",
+        "reading": "+200% SPD"
+      },
+      {
+        "modifier": 4,
+        "multiplier": 5,
+        "source": "Layered Stone at battle start",
+        "reading": "+400% DEF, eroding by 1 per super-effective hit"
+      },
+      {
+        "modifier": -1,
+        "multiplier": 0.25,
+        "source": "Moving Waters' Water-move proc",
+        "reading": "floored; the unfloored rule would give 0"
+      }
+    ],
+    "$scope": "Battle-only. Modifiers clear when the battle ends and never alter stored stats."
   }
 };

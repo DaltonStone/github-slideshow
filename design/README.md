@@ -12,8 +12,9 @@ design/
   lib/rules.js         the spec as code: types, stacking, STAB, stat curves
   lib/damage.js        the damage formula and crit -- PROPOSED
   lib/energy.js        energy, Struggle and the exhaustion KO -- PROPOSED
+  lib/modifiers.js     in-battle stat modifiers -- PROPOSED floor
   lib/data.generated.js  generated from data/; do not edit
-  test/                165 tests over the rules, data, formula and mechanics
+  test/                183 tests over the rules, data, formula and mechanics
   tools/               build steps, balance analysis, dev server
 ../game/               the playable page -- see game/README.md
 ```
@@ -24,7 +25,7 @@ Node 18+, no dependencies.
 
 ```sh
 cd design
-npm test         # 165 tests
+npm test         # 183 tests
 npm run analyze  # type-chart balance and growth analysis
 npm run build    # regenerate lib/data.generated.js and game/index.html
 npm run serve    # http://localhost:8080/game/
@@ -81,6 +82,6 @@ formula was chosen to satisfy, so a future retune cannot quietly break them.
 |---|---|---|
 | Creatures named | 60+ | 30 |
 | Fully authored | 30 | 0 |
-| Abilities | 50–60 | 31 |
+| Abilities | 50–60 | 29 |
 | Moves | TBD | not started |
 | Damage formula | — | **proposed, awaiting a decision** |

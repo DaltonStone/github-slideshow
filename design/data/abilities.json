@@ -155,18 +155,6 @@
       "effect": "On being KO'd, the killing move loses all remaining uses."
     },
     {
-      "id": "colony",
-      "name": "Colony",
-      "category": "hook",
-      "effect": "Has bodies instead of HP; each body lost is one fewer hit it can make."
-    },
-    {
-      "id": "royal",
-      "name": "Royal",
-      "category": "hook",
-      "effect": "Allied Swarm mons regain one body at end of turn."
-    },
-    {
       "id": "built",
       "name": "Built",
       "category": "hook",
@@ -189,7 +177,7 @@
       "name": "Aspect of Flame",
       "category": "signature",
       "signatureType": "Fire",
-      "effect": "Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to any creature, gain 0.25 SPD.",
+      "effect": "Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to any creature, gain a +0.25 SPD modifier (+25% SPD).",
       "$note": "Starter signature: Candelite line. Reads other creatures' burns too, not just its own -- it gets faster as the whole field burns."
     },
     {
@@ -197,7 +185,7 @@
       "name": "Moving Waters",
       "category": "signature",
       "signatureType": "Water",
-      "effect": "While WATER terrain is active, gain +2 SPD, and Water moves have a 30% chance to lower the target's S.DEF by 1.",
+      "effect": "While WATER terrain is active, gain a +2 SPD modifier (x3 SPD), and Water moves have a 30% chance to apply a -1 S.DEF modifier to the target.",
       "$note": "Starter signature: Merling line. Conditional on terrain, which nothing yet creates."
     },
     {
@@ -205,7 +193,7 @@
       "name": "Layered Stone",
       "category": "signature",
       "signatureType": "Earth",
-      "effect": "Gain +4 DEF at the start of battle. Lose 1 DEF from this ability each time a super-effective move connects.",
+      "effect": "Gain a +4 DEF modifier (x5 DEF) at the start of battle. Lose 1 from this modifier each time a super-effective move connects, so four super-effective hits strip it entirely.",
       "$note": "Starter signature: Bouldur line. Erodes rather than expiring -- four super-effective hits strip it entirely."
     }
   ]

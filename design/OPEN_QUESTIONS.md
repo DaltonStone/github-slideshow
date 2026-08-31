@@ -252,12 +252,7 @@ undefined condition cannot be balanced or implemented.
 
 ## 5. Hook abilities imply whole systems
 
-- `Colony` replaces HP with "bodies". That is a parallel damage model, not an
-  ability — how do bodies interact with the damage formula, with healing, with
-  a 3.0× hit?
-- `Royal` refers to "allied Swarm mons", but **Swarm is never defined**. It is
-  the only reference to the concept in the spec. Is Swarm a tag, an origin, a
-  caste, a type?
+- ~~`Colony` and `Royal`~~ — removed. Many bodies are one HP pool (§9.7).
 - `Built` gives 1.5× damage taken from Water. This is the only damage modifier
   in the spec that is neither type effectiveness nor STAB — it needs a slot in
   the multiplier order, which does not exist yet.
@@ -404,28 +399,27 @@ Recorded here so they are visible rather than buried in the data:
 30 creatures named, the game reframed as a card game, and three new starter
 lines. Four things in the drop contradict or leave open what is already built.
 
-### 9.1 Phantom is missing from the type list — treated as an oversight
+### 9.1 Phantom — RESOLVED
 
-The type list gives **nine** types and omits Phantom. But four creatures in the
-same message are Phantom-typed: **Toll** (Normal/Phantom), **Jaxs**
-(Dark/Phantom), **BellDum** and **BellGarde** (both Phantom/Steel).
+The nine-type list was a typo. Phantom is the tenth type and stays in the game.
 
-Phantom is kept as the tenth type on the assumption this is an omission from the
-list rather than a removal from the game. **If it is a real removal, say so** —
-it would delete four creatures' typings, remove one of Normal's two immunities,
-and change the Spirit group from four types to three.
-
-### 9.2 VisBeeQueen breaks the evolution rule
+### 9.2 VisBeeQueen still breaks the evolution rule
 
 VisBee (Earth) → VisGarde (Earth/Dark) is a normal evolution. VisBeeQueen is
-**Dark/Psychic** — it drops Earth, which every other line keeps, and it carries
-no evolution marker while VisGarde carries no "evolves further" marker either.
+**Dark/Psychic** — it drops Earth, which every other line keeps, and carries no
+evolution marker while VisGarde carries no "evolves further" marker either.
 
-Recorded as a separate creature, not a stage. `Colony` ("bodies instead of HP")
-and `Royal` ("allied Swarm creatures regain a body") are already in the ability
-list, and `Royal` is the only thing in the design that mentions **Swarm** — so a
-**caste** rather than an evolution looks like the intent. Three bees plus
-DrillBee is enough for a caste system to be worth having. Unresolved either way.
+The caste reading is now weaker, not stronger: **Swarm is gone** (§9.6), so
+there is no caste system for a queen to sit at the top of. That leaves two
+readings, both fine, but they need picking:
+
+- **A branch evolution from VisBee** — one creature, two possible ends. Nothing
+  else in the roster branches, so this would be a new rule, and it would be the
+  first evolution to drop a type.
+- **A third related creature** that simply happens to be a bee. Requires no new
+  rules at all, and `relatedMons` in the template already has a slot for it.
+
+Recorded as a separate creature until you say otherwise.
 
 ### 9.3 Dark is eight of thirty
 
@@ -473,29 +467,59 @@ as a win condition reads oddly next to a resource literally called exhaustion.
 Most likely persistence governs the adventure and duels start fresh — but that
 needs saying, because §10 is written as though it is universal.
 
-### 9.5 Three new systems arrived inside the starter abilities
+### 9.5 Stat modifiers — RESOLVED, with one edge
+
+The `+4` / `+2` / `0.25` / `-1` numbers are **in-battle multipliers**, not stat
+points. The number is the fraction it adds:
+
+```
+multiplier = max(0.25, 1 + sum of modifiers on that stat)
+```
+
+So `0.25` is +25% SPD, as stated. `+2` is ×3, `+4` is ×5. Modifiers on one stat
+add before they multiply, so four of Aspect of Flame's quarters is ×2.
+
+**The edge: `-1` gives exactly ×0 under the plain rule**, which would delete a
+stat. It is floored at 0.25 — the same floor the type chart uses, so the game
+keeps one convention. The alternative is `1/(1+|sum|)`, which halves at −1
+instead. **Unconfirmed**, and it matters: Moving Waters' proc is a −1 S.DEF, and
+the two readings are a 75% cut versus a 50% cut.
+
+What the decode does to the three signatures, measured:
+
+- **Layered Stone** (×5 DEF, eroding) cuts an incoming 60-power neutral hit to
+  **33% of its damage**, climbing back to 100% over four super-effective hits.
+  Strong, legible, and thematically exact — armour that chips. Good ability.
+- **Moving Waters'** −1 S.DEF proc raises special damage against the target by
+  **61%**. Strong for a 30% chance, but gated behind terrain that does not exist.
+- **Aspect of Flame** reaches ×2 SPD at four burns. On a 2v2 field with four
+  creatures, and reading burns applied by *anyone*, that is more reachable than
+  it looks.
+
+### 9.6 BURN and WATER terrain are still undefined
 
 | System | First named by | Status |
 |---|---|---|
 | **BURN** | Aspect of Flame | Applied, but what it *does* is never stated. `Fireproof` has granted immunity to it since v0.1 — the immunity predates the condition. |
-| **WATER terrain** | Moving Waters | Nothing in the game creates terrain, so Moving Waters is **currently a dead ability**. Water and Dragon are both "terrain setup" roles, so this blocks two types. |
-| **Stat modification** | all three | +4 DEF, +2 SPD, 0.25 SPD, "lower S.DEF by 1" — four grains. Are these flat points or stages on a ladder? |
+| **WATER terrain** | Moving Waters | **Nothing creates terrain**, so Moving Waters is currently a dead ability. Water and Dragon are both "terrain setup" roles, so this blocks two types. |
 
-The stat-grain question matters more than it looks: with a basic's SPD in the
-13–27 range, **+2 flat is a huge bonus and 0.25 flat is nearly nothing** until it
-stacks. v0.1 abilities used flat points (`+3 ATK`), which suggests flat — but
-"lower by 1" reads like a stage, and 0.25 only makes sense as a fraction.
+### 9.7 Swarm removed
 
-Aspect of Flame is also worth a second look: it gains SPD when BURN is applied to
-**any** creature, not just by this one. On a 2v2 field with four creatures and
-burn-spreading contact moves, that stacks faster than it looks.
+`Colony` ("bodies instead of HP") and `Royal` ("allied Swarm creatures regain a
+body") are deleted. **A creature made of many bodies is one creature with one HP
+pool** — Stilta's five little guys and Pilliduns combining are flavour, not a
+parallel damage model.
+
+This closes the oldest open question in the file (Swarm was named once, by
+`Royal`, and never defined) and removes the only mechanic that would have needed
+its own damage rules. Ability count 31 → 29.
 
 ## 10. Questions for the next pass
 
 1. Is Dragon's rarity a written rule, or does Dragon need a second weakness?
 2. What is the damage formula?
 3. Do modifiers stack multiplicatively, and is a ~6.75× stack acceptable?
-4. Is Swarm a type, a tag, or a caste?
+4. Is VisBeeQueen a branch evolution or a separate creature? (§9.2)
 5. Is the ability-pool inheritance rule in §7 above correct?
 6. Do all 60 base creatures use the 105/135/170 budgets, or do single-stage and
    two-stage lines get different totals? Right now a one-stage mon would be

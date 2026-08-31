@@ -455,6 +455,27 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         <input id="en" type="range" min="0" max="100" value="100">
       </div>
       <div class="field">
+        <label class="cap" for="amod">Attacker stat modifier <span id="amodv">0</span></label>
+        <select id="amod">
+          <option value="0">none — ×1</option>
+          <option value="0.25">+0.25 — ×1.25 (one BURN, Aspect of Flame)</option>
+          <option value="1">+1 — ×2</option>
+          <option value="2">+2 — ×3 (Moving Waters, in terrain)</option>
+          <option value="-0.5">−0.5 — ×0.5</option>
+          <option value="-1">−1 — ×0.25 (floored)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="cap" for="dmod">Defender stat modifier</label>
+        <select id="dmod">
+          <option value="0">none — ×1</option>
+          <option value="4">+4 — ×5 (Layered Stone, fresh)</option>
+          <option value="2">+2 — ×3 (Layered Stone, 2 hits in)</option>
+          <option value="-0.5">−0.5 — ×0.5</option>
+          <option value="-1">−1 — ×0.25 (Moving Waters proc, floored)</option>
+        </select>
+      </div>
+      <div class="field">
         <label class="cap" for="cls">Attack stat</label>
         <select id="cls">
           <option value="phys">Physical &mdash; ATK vs DEF</option>
@@ -501,6 +522,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
       <div class="field">
         <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
         <input id="scale" type="range" min="40" max="220" step="5" value="100">
+        <p class="panel-note" style="margin-top:8px">Stat modifiers are in-battle multipliers, not stat points: the number is the fraction it adds, so +0.25 is &times;1.25 and +4 is &times;5. They add before they multiply, and are floored at &times;0.25 &mdash; the plain rule makes &minus;1 exactly zero.</p>
         <p class="panel-note" style="margin-top:8px">Energy and stamina both persist between battles, and <b>energy hitting zero is a knockout</b> &mdash; it is a second health bar. A full mon has 18 turns of fighting; Exhausted has about two. Out of stamina, a mon Struggles: 25 power, typeless, 50% recoil.</p>
         <p class="panel-note" style="margin-top:8px">Crit chance runs 5% at L1 to 15% at L60, then stays flat. Crit damage is &times;1.5 and is still a placeholder &mdash; the design gives the chance curve, not the multiplier.</p>
       </div>
@@ -835,18 +857,6 @@ const abilityData = {
       "effect": "On being KO'd, the killing move loses all remaining uses."
     },
     {
-      "id": "colony",
-      "name": "Colony",
-      "category": "hook",
-      "effect": "Has bodies instead of HP; each body lost is one fewer hit it can make."
-    },
-    {
-      "id": "royal",
-      "name": "Royal",
-      "category": "hook",
-      "effect": "Allied Swarm mons regain one body at end of turn."
-    },
-    {
       "id": "built",
       "name": "Built",
       "category": "hook",
@@ -869,7 +879,7 @@ const abilityData = {
       "name": "Aspect of Flame",
       "category": "signature",
       "signatureType": "Fire",
-      "effect": "Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to any creature, gain 0.25 SPD.",
+      "effect": "Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to any creature, gain a +0.25 SPD modifier (+25% SPD).",
       "$note": "Starter signature: Candelite line. Reads other creatures' burns too, not just its own -- it gets faster as the whole field burns."
     },
     {
@@ -877,7 +887,7 @@ const abilityData = {
       "name": "Moving Waters",
       "category": "signature",
       "signatureType": "Water",
-      "effect": "While WATER terrain is active, gain +2 SPD, and Water moves have a 30% chance to lower the target's S.DEF by 1.",
+      "effect": "While WATER terrain is active, gain a +2 SPD modifier (x3 SPD), and Water moves have a 30% chance to apply a -1 S.DEF modifier to the target.",
       "$note": "Starter signature: Merling line. Conditional on terrain, which nothing yet creates."
     },
     {
@@ -885,7 +895,7 @@ const abilityData = {
       "name": "Layered Stone",
       "category": "signature",
       "signatureType": "Earth",
-      "effect": "Gain +4 DEF at the start of battle. Lose 1 DEF from this ability each time a super-effective move connects.",
+      "effect": "Gain a +4 DEF modifier (x5 DEF) at the start of battle. Lose 1 from this modifier each time a super-effective move connects, so four super-effective hits strip it entirely.",
       "$note": "Starter signature: Bouldur line. Erodes rather than expiring -- four super-effective hits strip it entirely."
     }
   ]
@@ -2303,10 +2313,38 @@ const mechanicsData = {
     "blockedOn": "Nothing in the roster or ability list CREATES terrain yet, so Moving Waters is currently a dead ability. What sets WATER terrain, how long does it last, and can more than one terrain be active?"
   },
   "statModification": {
-    "status": "shape-only",
-    "$comment": "The new starter abilities modify stats in three different grains: +4 DEF, +2 SPD, 0.25 SPD, and 'lower S.DEF by 1'.",
-    "blockedOn": "Are these flat points on the stat, or stages on a multiplier ladder? v0.1 abilities used flat points (+3 ATK), which suggests flat -- but 'lower S.DEF by 1' reads like a stage, and 0.25 only makes sense as a fraction of something.",
-    "$why": "With base stats this small (13-27 SPD on a basic), +2 flat is a large bonus and 0.25 flat is nearly nothing until it stacks. The two readings give very different balance."
+    "status": "proposed",
+    "$comment": "Abilities and moves apply MODIFIERS to a stat for the duration of a battle. They are multipliers, not permanent stat changes, and they do not touch the creature's stored stats.",
+    "rule": "multiplier = max(floor, 1 + sum of active modifiers on that stat)",
+    "floor": 0.25,
+    "$floorNote": "PROPOSED. The stated rule gives -1 a multiplier of exactly 0, which would zero a stat. The floor is 0.25, matching the type chart's floor, so the worst case is a quarter of the stat rather than none of it. The alternative shape for negatives is 1/(1+|sum|), which makes -1 a halving instead; unconfirmed either way.",
+    "examples": [
+      {
+        "modifier": 0.25,
+        "multiplier": 1.25,
+        "source": "Aspect of Flame, per BURN applied",
+        "reading": "+25% SPD"
+      },
+      {
+        "modifier": 2,
+        "multiplier": 3,
+        "source": "Moving Waters in WATER terrain",
+        "reading": "+200% SPD"
+      },
+      {
+        "modifier": 4,
+        "multiplier": 5,
+        "source": "Layered Stone at battle start",
+        "reading": "+400% DEF, eroding by 1 per super-effective hit"
+      },
+      {
+        "modifier": -1,
+        "multiplier": 0.25,
+        "source": "Moving Waters' Water-move proc",
+        "reading": "floored; the unfloored rule would give 0"
+      }
+    ],
+    "$scope": "Battle-only. Modifiers clear when the battle ends and never alter stored stats."
   }
 };
 
@@ -2794,6 +2832,77 @@ function turnsUntilKO(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENER
   return turns;
 }
 
+/**
+ * In-battle stat modifiers.
+ *
+ * Abilities and moves apply MODIFIERS to a stat for the duration of a battle.
+ * They are multipliers, not permanent stat changes -- a creature's stored stats
+ * are never touched, and everything clears when the battle ends.
+ *
+ *   multiplier = max(FLOOR, 1 + sum of active modifiers on that stat)
+ *
+ * So the number written on an ability is the fraction it adds:
+ *
+ *   +0.25  ->  x1.25   Aspect of Flame, per BURN applied      (+25% SPD)
+ *   +2     ->  x3.00   Moving Waters in WATER terrain         (+200% SPD)
+ *   +4     ->  x5.00   Layered Stone at battle start          (+400% DEF)
+ *   -1     ->  x0.25   floored; the plain rule would give 0
+ *
+ * THE FLOOR IS PROPOSED. The stated rule gives -1 a multiplier of exactly zero,
+ * which would delete a stat outright. 0.25 matches the type chart's floor, so
+ * the worst case is a quarter of the stat rather than none of it. The other
+ * plausible shape for negatives is 1/(1+|sum|), which halves at -1 instead.
+ */
+
+
+const MOD = mechanicsData.statModification;
+
+const MODIFIER_FLOOR = MOD.floor;
+
+/** The multiplier a stat is under, given every modifier currently on it. */
+function statMultiplier(modifiers = []) {
+  const list = Array.isArray(modifiers) ? modifiers : [modifiers];
+  let sum = 0;
+  for (const m of list) {
+    if (typeof m !== 'number' || Number.isNaN(m)) {
+      throw new SpecError(`a stat modifier must be a number, got ${m}`);
+    }
+    sum += m;
+  }
+  return Math.max(MODIFIER_FLOOR, 1 + sum);
+}
+
+/** One stat with its modifiers applied. Never rounds below 1. */
+function modifyStat(value, modifiers = []) {
+  if (value <= 0) throw new SpecError(`stat must be positive, got ${value}`);
+  return Math.max(1, Math.floor(value * statMultiplier(modifiers)));
+}
+
+/**
+ * A whole statline under a map of modifiers, e.g. { spe: [0.25, 0.25], def: 4 }.
+ * HP is never modified -- modifiers are battle-only and should not move a
+ * health bar mid-fight.
+ */
+function modifyStats(stats, byStat = {}) {
+  const out = { hp: stats.hp };
+  for (const k of ['atk', 'def', 'spa', 'spd', 'spe']) {
+    out[k] = modifyStat(stats[k], byStat[k] ?? []);
+  }
+  if ('hp' in byStat) {
+    throw new SpecError('HP cannot carry a stat modifier');
+  }
+  return out;
+}
+
+/**
+ * Layered Stone erodes: it starts at +4 and loses 1 per super-effective hit
+ * taken, so four of them strip it entirely.
+ */
+function layeredStoneAfter(superEffectiveHits) {
+  if (superEffectiveHits < 0) throw new SpecError('hits cannot be negative');
+  return Math.max(0, 4 - superEffectiveHits);
+}
+
 (function () {
   "use strict";
 
@@ -2891,9 +3000,15 @@ function turnsUntilKO(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENER
     var D = monById(Number($('def').value));
     var energy = Number($('en').value);
     var tier = tierFor(energy);
+    var aMod = Number($('amod').value), dMod = Number($('dmod').value);
     var asFresh = statsAt(BUILDS[$('ab').value], level);
     var as = applyEnergy(asFresh, energy);
     var ds = statsAt(BUILDS[$('db').value], level);
+    var atkKey = special ? 'spa' : 'atk', defKey = special ? 'spd' : 'def';
+    var aRaw = as[atkKey], dRaw = ds[defKey];
+    as = Object.assign({}, as); ds = Object.assign({}, ds);
+    as[atkKey] = modifyStat(aRaw, aMod);
+    ds[defKey] = modifyStat(dRaw, dMod);
 
     $('env').textContent = energy;
     $('entier').textContent = tier.knockedOut ? 'KNOCKED OUT' : tier.name;
@@ -2937,8 +3052,11 @@ function turnsUntilKO(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENER
 
     // multiplier chain
     var lines = [
-      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def +
-        (tier.statMultiplier < 1 ? ' &nbsp;(' + tier.name + ': stats ×' + tier.statMultiplier + ')' : ''), '', fmt(e.raw), false],
+      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' : 'ATK ') + args.atk +
+        (aMod ? ' <i>(×' + fmt(statMultiplier(aMod)) + ')</i>' : '') +
+        (special ? ' vs SpD ' : ' vs DEF ') + args.def +
+        (dMod ? ' <i>(×' + fmt(statMultiplier(dMod)) + ')</i>' : '') +
+        (tier.statMultiplier < 1 ? ' &nbsp;' + tier.name : ''), '', fmt(e.raw), false],
       ['STAB &mdash; ' + (e.stab === 1 ? 'not its type' : (typesOf(A).length === 1 ? 'mono-type' : 'dual-type')), '×' + e.stab, fmt(e.raw * e.stab), e.stab === 1],
       ['Type &mdash; ' + $('mt').value + ' vs ' + typesOf(D).join('/'), '×' + e.effectiveness, fmt(e.raw * e.stab * e.effectiveness), e.effectiveness === 1],
       ['Abilities' + (modifier === 1 ? ' &mdash; none active' : ''), '×' + fmt(modifier), fmt(e.raw * e.stab * e.effectiveness * modifier), modifier === 1],
@@ -2996,7 +3114,7 @@ function turnsUntilKO(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENER
 
   // ---- wiring ------------------------------------------------------------
 
-  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale', 'en', 'ab', 'db'].forEach(function (id) {
+  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale', 'en', 'ab', 'db', 'amod', 'dmod'].forEach(function (id) {
     $(id).addEventListener('input', render);
   });
 
