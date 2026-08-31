@@ -399,7 +399,98 @@ Recorded here so they are visible rather than buried in the data:
 | `relatedMons` | empty | There are only nine mons; predator/prey needs a real roster. |
 | Ability pool inheritance | an evolution keeps its previous stage's whole pool and adds to it | Not stated in the spec, but the 3→4→5 pool sizes strongly imply it. **Confirm this is intended** — it is enforced by a test, so it is cheap to reverse now and expensive later. |
 
-## 9. Questions for the next pass
+## 9. The v0.2 roster and the card framing
+
+30 creatures named, the game reframed as a card game, and three new starter
+lines. Four things in the drop contradict or leave open what is already built.
+
+### 9.1 Phantom is missing from the type list — treated as an oversight
+
+The type list gives **nine** types and omits Phantom. But four creatures in the
+same message are Phantom-typed: **Toll** (Normal/Phantom), **Jaxs**
+(Dark/Phantom), **BellDum** and **BellGarde** (both Phantom/Steel).
+
+Phantom is kept as the tenth type on the assumption this is an omission from the
+list rather than a removal from the game. **If it is a real removal, say so** —
+it would delete four creatures' typings, remove one of Normal's two immunities,
+and change the Spirit group from four types to three.
+
+### 9.2 VisBeeQueen breaks the evolution rule
+
+VisBee (Earth) → VisGarde (Earth/Dark) is a normal evolution. VisBeeQueen is
+**Dark/Psychic** — it drops Earth, which every other line keeps, and it carries
+no evolution marker while VisGarde carries no "evolves further" marker either.
+
+Recorded as a separate creature, not a stage. `Colony` ("bodies instead of HP")
+and `Royal` ("allied Swarm creatures regain a body") are already in the ability
+list, and `Royal` is the only thing in the design that mentions **Swarm** — so a
+**caste** rather than an evolution looks like the intent. Three bees plus
+DrillBee is enough for a caste system to be worth having. Unresolved either way.
+
+### 9.3 Dark is eight of thirty
+
+| Type | Creatures | | Type | Creatures |
+|---|---|---|---|---|
+| **Dark** | **8** | | Water | 3 |
+| Steel | 6 | | Psychic | 3 |
+| Earth | 4 | | Fire | 1 |
+| Normal | 4 | | Light | 1 |
+| Phantom | 4 | | **Dragon** | **0** |
+
+Dragon at zero is consistent with "rare" and is fine. **Dark at eight is the
+concentration to watch**: it is also the second-strongest type on the chart
+(§1.3) — four super-effective targets, one weakness, six of the game's eighteen
+3.0× pairings — and its only check is Light, which has exactly **one** creature.
+
+That is a roster where the strongest type is the most common and its counter is
+the rarest. Worth deciding deliberately rather than by accident: either more
+Light creatures, or fewer Dark ones, or Dark's chart strength comes down.
+
+Fire also has one creature (plus the starter line), which is thin for a type
+whose role is "speed and physical damage".
+
+### 9.4 The card framing settles two things and opens a bigger one
+
+**Settled.** Duels are **2v2 from a team of 6, chosen from 12** — so doubles are
+the competitive format, not a niche, and support archetypes are first-class.
+Party size is six, which the persistent-energy model needed. Outside the arena,
+singles.
+
+**Settled.** Both Duelists see each other's cards before choosing. No hidden
+information at selection; the read is on what the opponent brings and leads with.
+
+**Opened: support cards.** Thirty of them against twelve creatures — the larger
+half of the game by count — and nothing about them is designed. What they do,
+when they are played, whether playing one costs a turn, whether they are
+consumed. Given §10, the obvious first question is whether **support cards are
+where energy and stamina restoration lives**, which would make deck-building the
+real resource-management layer.
+
+**Tension worth flagging.** Energy and stamina persist between battles. In an
+adventure that is the point. In a *competitive duel* it is strange: two Duelists
+meeting with differently-rested teams is not a fair match, and "exhausted all 6"
+as a win condition reads oddly next to a resource literally called exhaustion.
+Most likely persistence governs the adventure and duels start fresh — but that
+needs saying, because §10 is written as though it is universal.
+
+### 9.5 Three new systems arrived inside the starter abilities
+
+| System | First named by | Status |
+|---|---|---|
+| **BURN** | Aspect of Flame | Applied, but what it *does* is never stated. `Fireproof` has granted immunity to it since v0.1 — the immunity predates the condition. |
+| **WATER terrain** | Moving Waters | Nothing in the game creates terrain, so Moving Waters is **currently a dead ability**. Water and Dragon are both "terrain setup" roles, so this blocks two types. |
+| **Stat modification** | all three | +4 DEF, +2 SPD, 0.25 SPD, "lower S.DEF by 1" — four grains. Are these flat points or stages on a ladder? |
+
+The stat-grain question matters more than it looks: with a basic's SPD in the
+13–27 range, **+2 flat is a huge bonus and 0.25 flat is nearly nothing** until it
+stacks. v0.1 abilities used flat points (`+3 ATK`), which suggests flat — but
+"lower by 1" reads like a stage, and 0.25 only makes sense as a fraction.
+
+Aspect of Flame is also worth a second look: it gains SPD when BURN is applied to
+**any** creature, not just by this one. On a 2v2 field with four creatures and
+burn-spreading contact moves, that stacks faster than it looks.
+
+## 10. Questions for the next pass
 
 1. Is Dragon's rarity a written rule, or does Dragon need a second weakness?
 2. What is the damage formula?

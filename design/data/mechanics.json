@@ -174,5 +174,43 @@
     "costsStamina": false,
     "costsEnergy": true,
     "$costNote": "Struggle still burns energy, so running out of stamina accelerates the run toward the energy KO."
+  },
+  "statusConditions": {
+    "status": "shape-only",
+    "$comment": "BURN is the first status condition the design has actually named (Aspect of Flame). The others are referenced by abilities but never defined.",
+    "named": [
+      {
+        "id": "burn",
+        "name": "BURN",
+        "definedBy": "Aspect of Flame applies it; what it DOES is not stated anywhere.",
+        "effect": null
+      }
+    ],
+    "referencedButUndefined": [
+      "poison (Built)",
+      "sleep (Built)",
+      "confusion (Clear Head)"
+    ],
+    "blockedOn": "What does BURN do? Chip damage, an ATK cut, both? Fireproof already grants immunity to it, so the immunity exists before the condition does."
+  },
+  "terrain": {
+    "status": "shape-only",
+    "$comment": "WATER terrain is the first terrain the design has named (Moving Waters). Water and Dragon are both 'terrain setup' roles, so this system is load-bearing for two types.",
+    "named": [
+      {
+        "id": "water",
+        "name": "WATER",
+        "definedBy": "Moving Waters reads it.",
+        "effect": null,
+        "setBy": null
+      }
+    ],
+    "blockedOn": "Nothing in the roster or ability list CREATES terrain yet, so Moving Waters is currently a dead ability. What sets WATER terrain, how long does it last, and can more than one terrain be active?"
+  },
+  "statModification": {
+    "status": "shape-only",
+    "$comment": "The new starter abilities modify stats in three different grains: +4 DEF, +2 SPD, 0.25 SPD, and 'lower S.DEF by 1'.",
+    "blockedOn": "Are these flat points on the stat, or stages on a multiplier ladder? v0.1 abilities used flat points (+3 ATK), which suggests flat -- but 'lower S.DEF by 1' reads like a stage, and 0.25 only makes sense as a fraction of something.",
+    "$why": "With base stats this small (13-27 SPD on a basic), +2 flat is a large bonus and 0.25 flat is nearly nothing until it stacks. The two readings give very different balance."
   }
 }

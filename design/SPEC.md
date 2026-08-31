@@ -28,6 +28,11 @@ Ten types:
 | 9 | Dragon  | Natural |
 | 10 | Phantom | Spirit |
 
+> **Note:** a later type list gave nine types and omitted Phantom, but four
+> creatures in the same roster are Phantom-typed (Toll, Jaxs, BellDum,
+> BellGarde). Phantom is treated as still in the game. See
+> [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §9.1.
+
 **Origins** are flavor groupings, not a mechanic:
 
 - **Natural** — Fire, Water, Earth, Normal, Dragon
@@ -201,38 +206,67 @@ more, and an underlevelled mon with a type advantage stays relevant.
 
 ---
 
-## 6. Starters
+## 6. Starters and roster
 
-Each starter begins **mono-type** and **gains a second type at its final stage**.
-The first type never changes, so the line keeps its identity; the second is what
-the creature has turned into by growing up.
+### 6.1 Starters
 
-| ID | Name | Type | HP | ATK | DEF | SpA | SpD | SPD | Total |
-|---|---|---|---|---|---|---|---|---|---|
-| #001 | Emberkit | Fire  | 15 | 22 | 13 | 15 | 13 | 27 | 105 |
-| #002 | Rillet   | Water | 18 | 15 | 17 | 20 | 20 | 15 | 105 |
-| #003 | Loambit  | Earth | 22 | 23 | 22 | 10 | 15 | 13 | 105 |
+Each line is three stages. Final-stage typings are **not yet stated**.
 
-Their lines:
+| Line | Basic | Evolved | Final | Signature ability |
+|---|---|---|---|---|
+| Fire | **Candelite** | Lanturnn | Ebberflame | Aspect of Flame |
+| Water | **Merling** | Merful | MerKing | Moving Waters |
+| Earth | **Bouldur** | Cliffkin | Fortruss | Layered Stone |
 
-| Line | Basic | Evolved | Final |
+They sit on the elemental cycle, so the choice is a real
+rock-paper-scissors commitment (Water → Fire → Earth → Water).
+
+### 6.2 Roster
+
+30 named creatures. All are **concept entries**: identity, typing and evolution
+links are real; stats, abilities, size and dex text are not authored yet.
+`[S]` marks a signature move, `→` an evolution.
+
+| # | Name | Typing | |
 |---|---|---|---|
-| Fire  | Emberkit `Fire` | Cindermaw `Fire` | Pyrelash **`Fire/Phantom`** |
-| Water | Rillet `Water` | Tidecalf `Water` | Brinemoor **`Water/Psychic`** |
-| Earth | Loambit `Earth` | Cragmole `Earth` | Terrabulk **`Earth/Steel`** |
+| 01–03 | Candelite → Lanturnn → Ebberflame | Fire | Starter |
+| 04–06 | Merling → Merful → MerKing | Water | Starter |
+| 07–09 | Bouldur → Cliffkin → Fortruss | Earth | Starter |
+| 10 | Gropper | Earth | Grasshopper with giant hind legs |
+| 11 | VisBee `[S]` | Earth | → VisGarde |
+| 12 | VisGarde | Earth/Dark | |
+| 13 | VisBeeQueen | Dark/Psychic | **Unresolved** — see §6.3 |
+| 14 | Stilta `[S]` | Normal | Five little guys |
+| 15 | Toll | Normal/Phantom | Corrupted, born from a virus |
+| 16 | Jaxs `[S]` | Dark/Phantom | Jack-In-The-Box |
+| 17 | Dusk | Dark | → DuskNoar |
+| 18 | DuskNoar `[S]` | Dark/Steel | |
+| 19 | Bane `[S]` | Light/Steel | The kind sword |
+| 20 | DrillBee | Earth | Wants VisBee honey |
+| 21 | TourqueTon | Steel | Turtle, vicious bite |
+| 22 | BellDum | Phantom/Steel | → BellGarde |
+| 23 | BellGarde | Phantom/Steel | |
+| 24 | Sentry X/Y | Steel/Psychic | Construct out of the deep past |
+| 25 | Pilliduns | Psychic/Normal | Combine to do large things |
+| 26 | Miggoons | Normal | Mice |
+| 27 | Frenfex | Fire | Flaming fox |
+| 28 | Bloom | Dark/Water | → BloomGloom |
+| 29 | BloomGloom | Dark/Water | → DoomBloom |
+| 30 | DoomBloom `[S]` | Dark/Water | Evil blimp |
 
-The second type is not free. A final stage trades mono-type STAB (1.5x on one
-type) for dual STAB (1.25x on two), and picks up the second type's weaknesses
-additively. See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §1.5 for what this does
-to the starter triangle — it is currently **not** a clean cycle at final stage.
+**Type spread:** Dark 8, Steel 6, Earth 4, Normal 4, Phantom 4, Water 3,
+Psychic 3, Fire 1, Light 1, **Dragon 0**. Dragon having no creatures is
+consistent with it being rare; Dark carrying eight is the concentration to watch,
+since Dark is also the second-strongest type on the chart
+([`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §1.3).
 
-Names are working titles (§ [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §4). The
-three starters sit on the elemental cycle, so the choice is a real
-rock-paper-scissors commitment rather than a cosmetic one.
+### 6.3 VisBeeQueen
 
-Their evolutions are specified in [`data/mons.json`](data/mons.json) — see §9.
-
----
+VisBee → VisGarde is a normal evolution (Earth, then Earth/Dark). VisBeeQueen is
+Dark/Psychic — it **drops Earth**, which every other rule in this document
+forbids an evolution from doing, and it carries no evolution marker. It is
+recorded as a separate creature rather than a stage. Given `Colony` and `Royal`
+already exist in the ability list, a **caste** is the likely intent. Unresolved.
 
 ## 7. Type stat defaults
 
@@ -262,9 +296,19 @@ Every mon has a **pool of 3–5** abilities, of which **one is active**.
 
 | Ability | Type | Effect |
 |---|---|---|
-| **Kindling** | Fire | The first attack of the battle deals 1.5×. |
-| **Tidewater** | Water | Heals 1/8 max HP at end of turn while above half HP. |
-| **Bedrock** | Earth | Cannot be KO'd from full HP in one hit; survives at 1 HP. |
+| **Aspect of Flame** | Fire | Contact moves have a 30% chance to apply BURN. Whenever BURN is applied to *any* creature, gain 0.25 SPD. |
+| **Moving Waters** | Water | While WATER terrain is active, gain +2 SPD, and Water moves have a 30% chance to lower the target's S.DEF by 1. |
+| **Layered Stone** | Earth | Gain +4 DEF at the start of battle. Lose 1 DEF from this ability each time a super-effective move connects. |
+
+Three things these introduce that the design had not previously named: **BURN**
+(the first defined status condition), **WATER terrain** (the first terrain), and
+**stat modification in three different grains** — +4, +2, 0.25, and "lower by 1".
+All three are tracked in [`data/mechanics.json`](data/mechanics.json) as
+shape-only. Note that Moving Waters is currently a dead ability: nothing in the
+game creates terrain yet.
+
+`Kindling`, `Tidewater` and `Bedrock` were the previous roster's starter
+signatures. They are now unassigned shared abilities.
 
 ### Shared pool
 
@@ -432,7 +476,38 @@ anything else.
 
 ---
 
-## 11. Mon template
+## 11. Duels and decks
+
+Creatures are captured onto **cards**. Anyone holding them is a **Deck Holder**;
+those who battle competitively are **Duelists**.
+
+| | |
+|---|---|
+| Creature cards held | up to **12** |
+| Support cards held | up to **30** |
+| Creatures taken into a duel | **6**, chosen from the 12 |
+| Creatures on the field per side | **2** |
+| Duel ends when | one side's 6 are exhausted |
+
+**Both Duelists see each other's cards** before choosing their six. There is no
+hidden information at team selection — the read is on what the opponent will
+*bring* and *lead with*, not on what they own.
+
+Two things this settles that were open:
+
+- **Doubles.** Duels are **2v2**. The long-running question is answered: support
+  archetypes are first-class in the competitive format, not a niche. Outside the
+  arena the rules are lenient and battles are usually **singles**.
+- **Party size.** Six, which the persistent-energy model in §10 needed — bench
+  recovery only works if there is a bench.
+
+**Support cards are a wholly new entity** and nothing about them is designed:
+what they do, when they are played, whether they cost anything. Thirty of them
+against twelve creatures suggests they are the larger half of the game.
+
+---
+
+## 12. Mon template
 
 Every mon is authored as three tabs.
 
@@ -460,18 +535,21 @@ The JSON encoding of this template is documented in
 
 ---
 
-## 12. Targets
+## 13. Targets
 
 | Item | Target | Now |
 |---|---|---|
-| Base creatures (excl. evolutions) | 60+ | 3 |
-| Total mons incl. evolutions | — | 9 |
-| Shared abilities | ~50–60 | 28 |
+| Creatures named | 60+ | 30 |
+| Fully authored | 30 | 0 |
+| Abilities | ~50–60 | 31 |
 | Move pools | TBD | not started |
+| Support cards | up to 30 held | not started |
 
----
+Every creature is currently a **concept entry** — the name, typing and evolution
+links are real and tested; stats, abilities, size and dex text are null until
+authored. `data/mons.json` marks each with `status`.
 
-## 13. Not yet designed
+## 14. Not yet designed
 
 - **The damage formula itself.** This spec fixes the *multipliers* (type
   effectiveness, STAB) and states that level is not a term, but never states the

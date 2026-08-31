@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import * as M from '../lib/rules.js';
+import { GLASS, TANK, BASIC } from './fixtures.js';
 import { damage, explain, effectiveAttack, hitsToKO, TUNING } from '../lib/damage.js';
 
 const base = {
@@ -128,8 +129,8 @@ test('explain agrees with damage', () => {
 // --- against the real roster ------------------------------------------------
 
 test('a final-stage attacker needs several hits, not one, on a comparable tank', () => {
-  const attacker = M.statsAt(M.monById(5).engine.stats, 50);  // Pyrelash
-  const defender = M.statsAt(M.monById(9).engine.stats, 50);  // Terrabulk
+  const attacker = M.statsAt(GLASS, 50);
+  const defender = M.statsAt(TANK, 50);
   const d = damage({
     power: 60, atk: attacker.atk, def: defender.def,
     moveType: 'Normal', attackerTypes: 'Fire', defenderTypes: 'Earth',
@@ -142,8 +143,8 @@ test('with type advantage neutralised, the tank out-lasts the glass cannon', () 
   // Both sides use a Normal move, so neither STAB nor the chart applies and the
   // comparison is purely bulk vs frailty. (Using their own types instead would
   // just measure Fire-beats-Earth, which is the chart's job, not the formula's.)
-  const glass = M.statsAt(M.monById(5).engine.stats, 50);  // Pyrelash
-  const tank = M.statsAt(M.monById(9).engine.stats, 50);   // Terrabulk
+  const glass = M.statsAt(GLASS, 50);
+  const tank = M.statsAt(TANK, 50);
   const neutral = { power: 60, moveType: 'Normal' };
   const intoTank = damage({ ...neutral, atk: glass.atk, def: tank.def, attackerTypes: 'Fire', defenderTypes: 'Earth' });
   const intoGlass = damage({ ...neutral, atk: tank.atk, def: glass.def, attackerTypes: 'Earth', defenderTypes: 'Fire' });
@@ -154,27 +155,26 @@ test('with type advantage neutralised, the tank out-lasts the glass cannon', () 
 test('a type advantage can overturn a bulk advantage', () => {
   // The flip side: Fire beats Earth, so the frail attacker wins that matchup
   // outright. This is the chart doing its job and is worth pinning down.
-  const glass = M.statsAt(M.monById(5).engine.stats, 50);
-  const tank = M.statsAt(M.monById(9).engine.stats, 50);
+  const glass = M.statsAt(GLASS, 50);
+  const tank = M.statsAt(TANK, 50);
   const intoTank = damage({ power: 60, atk: glass.atk, def: tank.def, moveType: 'Fire', attackerTypes: 'Fire', defenderTypes: 'Earth' });
   const intoGlass = damage({ power: 60, atk: tank.atk, def: glass.def, moveType: 'Earth', attackerTypes: 'Earth', defenderTypes: 'Fire' });
   assert.ok(hitsToKO(tank.hp, intoTank) < hitsToKO(glass.hp, intoGlass),
     'Fire beats Earth, so the frail Fire attacker should win this one');
 });
 
-test('no starter one-shots another starter at equal level', () => {
-  for (const a of [1, 2, 3]) {
-    for (const b of [1, 2, 3]) {
-      if (a === b) continue;
-      const A = M.monById(a), B = M.monById(b);
-      const as = M.statsAt(A.engine.stats, 15), bs = M.statsAt(B.engine.stats, 15);
-      const d = damage({
-        power: 60, atk: as.atk, def: bs.def,
-        moveType: A.engine.type1, attackerTypes: A.engine.type1, defenderTypes: B.engine.type1,
-      });
-      assert.ok(d < bs.hp,
-        `${A.engine.name} one-shots ${B.engine.name} (${d} vs ${bs.hp} HP)`);
-    }
+test('no early-game creature one-shots another at equal level', () => {
+  // The starters sit on the elemental cycle, so this is the worst case: a
+  // super-effective STAB hit between two basics.
+  const cycle = [['Fire', 'Earth'], ['Earth', 'Water'], ['Water', 'Fire']];
+  for (const [atk, def] of cycle) {
+    const as = M.statsAt(BASIC, 15), bs = M.statsAt(BASIC, 15);
+    const dmg = damage({
+      power: 60, atk: as.atk, def: bs.def,
+      moveType: atk, attackerTypes: atk, defenderTypes: def,
+    });
+    assert.equal(M.effectiveness(atk, def), 2, `${atk} should beat ${def}`);
+    assert.ok(dmg < bs.hp, `${atk} one-shots ${def} (${dmg} vs ${bs.hp} HP)`);
   }
 });
 

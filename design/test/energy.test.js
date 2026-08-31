@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import * as M from '../lib/rules.js';
 import * as E from '../lib/energy.js';
+import { TANK, GLASS } from './fixtures.js';
 
 const ENERGY = M.mechanicsData.energy;
 
@@ -66,7 +67,7 @@ test('energy cannot make a stat vanish', () => {
 // ---------------------------------------------------------------------------
 
 test('energy scales the fighting stats but never HP', () => {
-  const stats = M.statsAt(M.monById(9).engine.stats, 50);
+  const stats = M.statsAt(TANK, 50);
   const drained = E.applyEnergy(stats, 5);
   assert.equal(drained.hp, stats.hp, 'HP must not shrink mid-run');
   for (const k of ['atk', 'def', 'spa', 'spd', 'spe']) {
@@ -75,7 +76,7 @@ test('energy scales the fighting stats but never HP', () => {
 });
 
 test('a fresh mon is unmodified', () => {
-  const stats = M.statsAt(M.monById(5).engine.stats, 50);
+  const stats = M.statsAt(GLASS, 50);
   assert.deepEqual(E.applyEnergy(stats, 100), stats);
 });
 

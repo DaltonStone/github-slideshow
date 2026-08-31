@@ -409,8 +409,8 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
     <h1>Combat Lab</h1>
     <p class="standfirst">
       Every rule here is the spec, run as code &mdash; except the damage formula, which
-      the spec never states. <strong>That one is a proposal.</strong> Change the numbers
-      below until the fight feels right, then we write down what you picked.
+      the spec never states. <strong>That one is a proposal.</strong> The 30 creatures have
+      real typings but no stats yet, so pick a placeholder build to see the maths move.
     </p>
   </header>
 
@@ -429,6 +429,14 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
       <div class="field">
         <label class="cap" for="def">Defender</label>
         <select id="def"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="ab">Attacker build</label>
+        <select id="ab"></select>
+      </div>
+      <div class="field">
+        <label class="cap" for="db">Defender build</label>
+        <select id="db"></select>
       </div>
       <div class="field">
         <label class="cap" for="mt">Move type</label>
@@ -517,7 +525,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
   <section class="panel">
     <div class="panel-head">
       <h2>Roster</h2>
-      <p class="panel-note">All nine mons at level <span id="lvv2">50</span>. Base totals are fixed by stage: 105 basic, 135 evolved, 170 final.</p>
+      <p class="panel-note">All 30 creatures. Typings and evolution links are real; <b>no stats are authored yet</b>, so the matchup above reads typing from here and numbers from a placeholder build.</p>
     </div>
     <div class="roster-scroll">
       <table class="roster" id="roster"></table>
@@ -542,6 +550,15 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
 (function () {
   "use strict";
 
+  // The roster's typings are real; its stats are not authored yet. So the Lab
+  // reads TYPING from the roster and STATS from these placeholder builds.
+  var BUILDS = {
+    glass:   { name: 'Glass cannon (final, 170)', hp: 22, atk: 40, def: 20, spa: 22, spd: 19, spe: 47 },
+    tank:    { name: 'Tank (final, 170)',         hp: 35, atk: 38, def: 37, spa: 15, spd: 24, spe: 21 },
+    support: { name: 'Support (final, 170)',      hp: 29, atk: 24, def: 28, spa: 33, spd: 33, spe: 23 },
+    basic:   { name: 'Basic (105)',               hp: 15, atk: 22, def: 13, spa: 15, spd: 13, spe: 27 }
+  };
+
   var $ = function (id) { return document.getElementById(id); };
   var state = { crit: false, kindle: false, slow: false };
 
@@ -553,8 +570,14 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
   }).join('');
   $('atk').innerHTML = monOpts;
   $('def').innerHTML = monOpts;
-  $('atk').value = 5;   // Pyrelash
-  $('def').value = 9;   // Terrabulk
+  $('atk').value = 16;  // Jaxs, Dark/Phantom
+  $('def').value = 19;  // Bane, Light/Steel
+
+  var buildOpts = Object.keys(BUILDS).map(function (k) {
+    return '<option value="' + k + '">' + BUILDS[k].name + '</option>';
+  }).join('');
+  $('ab').innerHTML = buildOpts; $('db').innerHTML = buildOpts;
+  $('ab').value = 'glass'; $('db').value = 'tank';
 
   $('mt').innerHTML = TYPES.map(function (t) {
     return '<option value="' + t + '">' + t + '</option>';
@@ -616,15 +639,14 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
     TUNING.SCALE = Number($('scale').value);
     $('scalev').textContent = TUNING.SCALE;
     $('lvv').textContent = level;
-    $('lvv2').textContent = level;
 
     var A = monById(Number($('atk').value));
     var D = monById(Number($('def').value));
     var energy = Number($('en').value);
     var tier = tierFor(energy);
-    var asFresh = statsAt(A.engine.stats, level);
+    var asFresh = statsAt(BUILDS[$('ab').value], level);
     var as = applyEnergy(asFresh, energy);
-    var ds = statsAt(D.engine.stats, level);
+    var ds = statsAt(BUILDS[$('db').value], level);
 
     $('env').textContent = energy;
     $('entier').textContent = tier.knockedOut ? 'KNOCKED OUT' : tier.name;
@@ -708,24 +730,26 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
   }
 
   function renderRoster(level) {
-    var head = '<tr><th>Mon</th><th>Stage</th><th>HP</th><th>ATK</th><th>DEF</th>' +
-      '<th>SP.ATK</th><th>SP.DEF</th><th>SPEED</th><th>Base total</th><th>Height</th><th>Weight</th></tr>';
+    var head = '<tr><th>#</th><th>Creature</th><th>Typing</th><th>Origin</th>' +
+      '<th>Stage</th><th>Sig. move</th><th>Evolves into</th><th>Stats</th></tr>';
     var body = MONS.map(function (m) {
-      var s = statsAt(m.engine.stats, level);
-      return '<tr><td class="name">' + m.engine.name +
-        '<span class="type">' + typesOf(m).join('/') + '</span></td>' +
-        '<td>' + m.engine.stage + '</td>' +
-        '<td class="hp">' + s.hp + '</td><td>' + s.atk + '</td><td>' + s.def + '</td>' +
-        '<td>' + s.spa + '</td><td>' + s.spd + '</td><td>' + s.spe + '</td>' +
-        '<td class="tot">' + m.engine.total + '</td>' +
-        '<td>' + m.engine.height + ' m</td><td>' + m.engine.weight + ' kg</td></tr>';
+      var e = m.engine;
+      var into = e.evolvesInto ? (monById(e.evolvesInto.id) || {}).engine : null;
+      return '<tr><td>' + String(e.id).padStart(2, '0') + '</td>' +
+        '<td class="name">' + e.name + '</td>' +
+        '<td>' + typesOf(m).join('/') + '</td>' +
+        '<td>' + e.origin + '</td>' +
+        '<td>' + (e.stage || '—') + '</td>' +
+        '<td>' + (e.hasSignatureMove ? 'yes' : '—') + '</td>' +
+        '<td>' + (into ? into.name : '—') + '</td>' +
+        '<td>' + (m.status === 'complete' ? 'authored' : 'not authored') + '</td></tr>';
     }).join('');
     $('roster').innerHTML = head + body;
   }
 
   // ---- wiring ------------------------------------------------------------
 
-  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale', 'en'].forEach(function (id) {
+  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale', 'en', 'ab', 'db'].forEach(function (id) {
     $(id).addEventListener('input', render);
   });
 

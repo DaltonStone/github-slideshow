@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import * as M from '../lib/rules.js';
 import { critChance, expectedDamage, damage, TUNING } from '../lib/damage.js';
 
+const AUTHORED = M.MONS.filter((x) => x.status === 'complete');
+
 const CRIT = M.mechanicsData.crit;
 
 // ---------------------------------------------------------------------------
@@ -126,8 +128,8 @@ test('Thorns keys off contact, so the ability and the classes cannot disagree', 
 // Height and weight (SPEC.md section 9.2)
 // ---------------------------------------------------------------------------
 
-test('every mon declares a positive height and weight', () => {
-  for (const m of M.MONS) {
+test('every authored mon declares a positive height and weight', () => {
+  for (const m of AUTHORED) {
     const { height, weight, name } = { ...m.engine };
     assert.ok(typeof height === 'number' && height > 0, `${name} height: ${height}`);
     assert.ok(typeof weight === 'number' && weight > 0, `${name} weight: ${weight}`);
@@ -135,14 +137,14 @@ test('every mon declares a positive height and weight', () => {
 });
 
 test('size is plausible: nothing is a millimetre tall or heavier than a whale', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     assert.ok(m.engine.height >= 0.05 && m.engine.height <= 30, m.engine.name);
     assert.ok(m.engine.weight >= 0.1 && m.engine.weight <= 20000, m.engine.name);
   }
 });
 
 test('a mon never shrinks when it evolves', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     if (!m.engine.evolvesInto) continue;
     const next = M.monById(m.engine.evolvesInto.id);
     assert.ok(next.engine.height >= m.engine.height,
@@ -152,15 +154,11 @@ test('a mon never shrinks when it evolves', () => {
   }
 });
 
-test('the weight-ratio cap keeps size-based damage bounded', () => {
-  // Terrabulk is ~91x Emberkit's weight. Without a cap a weight-ratio term
-  // would be an unbounded multiplier.
-  const heaviest = Math.max(...M.MONS.map((m) => m.engine.weight));
-  const lightest = Math.min(...M.MONS.map((m) => m.engine.weight));
-  const raw = heaviest / lightest;
-  assert.ok(raw > M.mechanicsData.size.weightRatioCap,
-    'the cap is only meaningful if the roster can exceed it');
+test('the weight-ratio cap stays modest', () => {
+  // A roster spanning a bee and a blimp will blow past any ratio, so the cap
+  // has to be small enough to matter once sizes are authored.
   assert.ok(M.mechanicsData.size.weightRatioCap <= 10, 'cap should stay modest');
+  assert.ok(M.mechanicsData.size.weightRatioCap >= 2, 'a cap below 2x makes weight pointless');
 });
 
 // ---------------------------------------------------------------------------

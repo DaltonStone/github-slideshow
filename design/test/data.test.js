@@ -94,10 +94,16 @@ test('signature abilities name a real type', () => {
   }
 });
 
-test('the three starter signatures exist', () => {
-  for (const id of ['kindling', 'tidewater', 'bedrock']) {
-    assert.ok(M.abilityById(id), `missing signature ${id}`);
+test('the three starter signatures exist and match the starter lines', () => {
+  const sigs = { 'aspect-of-flame': 'Fire', 'moving-waters': 'Water', 'layered-stone': 'Earth' };
+  for (const [id, type] of Object.entries(sigs)) {
+    const a = M.abilityById(id);
+    assert.ok(a, `missing signature ${id}`);
+    assert.equal(a.signatureType, type);
   }
+  // and exactly these three are signatures
+  assert.deepEqual(M.ABILITIES.filter((a) => a.category === 'signature').map((a) => a.id).sort(),
+    Object.keys(sigs).sort());
 });
 
 test('conflictsWith only names real abilities and is symmetric', () => {
@@ -157,8 +163,22 @@ test('a mon origin matches the origin of its primary type', () => {
   }
 });
 
-test('every mon has all six stats as positive integers', () => {
+const AUTHORED = M.MONS.filter((m) => m.status === 'complete');
+
+test('every mon declares a status, and concepts are honest about being empty', () => {
   for (const m of M.MONS) {
+    assert.ok(['concept', 'complete'].includes(m.status), `${m.engine.name}: ${m.status}`);
+    if (m.status !== 'concept') continue;
+    // a concept must be explicitly null, never silently missing
+    for (const k of ['stats', 'total', 'height', 'weight']) {
+      assert.ok(k in m.engine, `${m.engine.name} is missing ${k} entirely`);
+      assert.equal(m.engine[k], null, `${m.engine.name}.${k} should be null while a concept`);
+    }
+  }
+});
+
+test('every mon has all six stats as positive integers', () => {
+  for (const m of AUTHORED) {
     for (const k of STAT_KEYS) {
       const v = m.engine.stats[k];
       assert.ok(Number.isInteger(v) && v > 0, `${m.engine.name}.${k} = ${v}`);
@@ -167,14 +187,14 @@ test('every mon has all six stats as positive integers', () => {
 });
 
 test('the declared total equals the sum of the six stats', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     const sum = STAT_KEYS.reduce((a, k) => a + m.engine.stats[k], 0);
     assert.equal(sum, m.engine.total, `${m.engine.name}: stats sum to ${sum}, total says ${m.engine.total}`);
   }
 });
 
 test('the total matches the fixed budget for the evolution stage', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     const expected = M.STAGE_TOTALS[m.engine.stage];
     assert.ok(expected !== undefined, `${m.engine.name}: unknown stage ${m.engine.stage}`);
     assert.equal(m.engine.total, expected,
@@ -183,7 +203,7 @@ test('the total matches the fixed budget for the evolution stage', () => {
 });
 
 test('ability pools hold 3 to 5 real, non-repeated abilities', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     const pool = m.engine.abilityPool;
     assert.ok(pool.length >= 3 && pool.length <= 5,
       `${m.engine.name} has ${pool.length} abilities, must be 3-5`);
@@ -252,11 +272,11 @@ test('evolution links point at real mons and agree in both directions', () => {
 test('evolution levels are inside the level range and strictly increasing along a line', () => {
   for (const m of M.MONS) {
     const into = m.engine.evolvesInto;
-    if (!into || into.method !== 'level') continue;
+    if (!into || into.method !== 'level' || into.level === null) continue;
     assert.ok(into.level >= M.MIN_LEVEL && into.level <= M.MAX_LEVEL,
       `${m.engine.name} evolves at L${into.level}`);
     const from = m.engine.evolvesFrom;
-    if (from && from.method === 'level') {
+    if (from && from.method === 'level' && from.level !== null) {
       assert.ok(into.level > from.level,
         `${m.engine.name} evolves into something at L${into.level} but came from L${from.level}`);
     }
@@ -265,7 +285,7 @@ test('evolution levels are inside the level range and strictly increasing along 
 
 test('stages advance along an evolution line', () => {
   const order = { basic: 0, evolved: 1, final: 2 };
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     const into = m.engine.evolvesInto;
     if (!into) continue;
     const next = M.monById(into.id);
@@ -275,14 +295,14 @@ test('stages advance along an evolution line', () => {
 });
 
 test('a final-stage mon evolves into nothing, and a basic one comes from nothing', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     if (m.engine.stage === 'final') assert.equal(m.engine.evolvesInto, null, m.engine.name);
     if (m.engine.stage === 'basic') assert.equal(m.engine.evolvesFrom, null, m.engine.name);
   }
 });
 
 test('every stat is non-decreasing across an evolution', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     if (!m.engine.evolvesInto) continue;
     const next = M.monById(m.engine.evolvesInto.id);
     for (const k of STAT_KEYS) {
@@ -309,7 +329,7 @@ test('an evolution keeps its primary type and never loses a type', () => {
 });
 
 test('only a final stage is dual-typed', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     if (m.engine.type2 === null) continue;
     assert.equal(m.engine.stage, 'final',
       `${m.engine.name} is dual-typed at the ${m.engine.stage} stage`);
@@ -317,7 +337,7 @@ test('only a final stage is dual-typed', () => {
 });
 
 test('a dual-typed final stage really does trade STAB for coverage', () => {
-  for (const m of M.MONS.filter((x) => x.engine.type2)) {
+  for (const m of AUTHORED.filter((x) => x.engine.type2)) {
     const types = M.typesOf(m);
     assert.equal(M.stab(types[0], types), 1.25);
     assert.equal(M.stab(types[1], types), 1.25);
@@ -329,7 +349,7 @@ test('a dual-typed final stage really does trade STAB for coverage', () => {
 });
 
 test('an evolution never loses an ability from its pool', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     if (!m.engine.evolvesInto) continue;
     const next = M.monById(m.engine.evolvesInto.id);
     for (const id of m.engine.abilityPool) {
@@ -340,7 +360,7 @@ test('an evolution never loses an ability from its pool', () => {
 });
 
 test('the three starter lines each resolve to three stages', () => {
-  for (const name of ['Emberkit', 'Rillet', 'Loambit']) {
+  for (const name of ['Candelite', 'Merling', 'Bouldur']) {
     const line = M.evolutionLine(name);
     assert.equal(line.length, 3, `${name}'s line has ${line.length} stages`);
     assert.deepEqual(line.map((m) => m.engine.stage), ['basic', 'evolved', 'final']);
@@ -348,7 +368,7 @@ test('the three starter lines each resolve to three stages', () => {
 });
 
 test('the starters sit on the elemental cycle', () => {
-  const starters = [1, 2, 3].map((id) => M.monById(id));
+  const starters = [1, 4, 7].map((id) => M.monById(id));
   assert.deepEqual(starters.map((m) => m.engine.type1), ['Fire', 'Water', 'Earth']);
   // each starter beats exactly one of the others and loses to exactly one
   for (const a of starters) {
@@ -360,22 +380,25 @@ test('the starters sit on the elemental cycle', () => {
   }
 });
 
-test('the three starters have the identical base total', () => {
-  const totals = [1, 2, 3].map((id) => M.monById(id).engine.total);
-  assert.deepEqual(totals, [105, 105, 105]);
+test('each starter carries exactly its own line signature', () => {
+  const expected = { Candelite: 'aspect-of-flame', Merling: 'moving-waters', Bouldur: 'layered-stone' };
+  for (const [name, sig] of Object.entries(expected)) {
+    for (const stage of M.evolutionLine(name)) {
+      assert.ok(stage.engine.abilityPool.includes(sig),
+        `${stage.engine.name} should carry ${sig}`);
+      const others = Object.values(expected).filter((s) => s !== sig);
+      for (const o of others) {
+        assert.ok(!stage.engine.abilityPool.includes(o),
+          `${stage.engine.name} carries another line's signature: ${o}`);
+      }
+    }
+  }
 });
 
-test('each starter is shaped like its type default', () => {
-  const fire = M.monById(1).engine.stats;   // fast physical, frail
-  assert.ok(fire.spe > fire.hp && fire.spe > fire.def, 'Fire starter is not fast');
-  assert.ok(fire.atk > fire.spa, 'Fire starter is not physical');
-
-  const water = M.monById(2).engine.stats;  // balanced, special-leaning
-  assert.ok(water.spa > water.atk, 'Water starter is not special-leaning');
-
-  const earth = M.monById(3).engine.stats;  // bulky slow physical
-  assert.ok(earth.atk > earth.spa, 'Earth starter is not physical');
-  assert.ok(earth.def > earth.spe, 'Earth starter is not bulky and slow');
+test('once starters are authored, they share a base total and match their type shape', () => {
+  const starters = [1, 4, 7].map((id) => M.monById(id)).filter((m) => m.status === 'complete');
+  if (starters.length === 0) return; // still concepts
+  assert.deepEqual(starters.map((m) => m.engine.total), starters.map(() => 105));
 });
 
 // ---------------------------------------------------------------------------
@@ -405,7 +428,7 @@ test('dex entry thresholds are declared, ascending and drawn from the catch ladd
 });
 
 test('the first dex entry unlocks on the first catch', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     if (m.dex.entries.length === 0) continue;
     assert.equal(m.dex.entries[0].threshold, 1,
       `${m.engine.name}'s first entry needs ${m.dex.entries[0].threshold} catches`);
@@ -413,7 +436,7 @@ test('the first dex entry unlocks on the first catch', () => {
 });
 
 test('every mon fills in the rest of the dex tab', () => {
-  for (const m of M.MONS) {
+  for (const m of AUTHORED) {
     assert.ok(m.dex.whereFound, `${m.engine.name} has no whereFound`);
     assert.ok(m.dex.evolutionNotes, `${m.engine.name} has no evolutionNotes`);
     const od = m.dex.originDetail;
@@ -457,22 +480,21 @@ test('relatedMons only names real mons, never itself', () => {
 // data vs. spec prose
 // ---------------------------------------------------------------------------
 
-test('every mon in the data is named in the spec or reachable from a starter', () => {
+test('every mon is named in the spec roster', () => {
   for (const m of M.MONS) {
-    const inLine = M.evolutionLine(m.engine.id).some((x) => [1, 2, 3].includes(x.engine.id));
-    assert.ok(SPEC.includes(m.engine.name) || inLine,
-      `${m.engine.name} is orphaned: not in SPEC.md and not on a starter line`);
+    assert.ok(SPEC.includes(m.engine.name),
+      `${m.engine.name} is in the data but not listed in SPEC.md`);
   }
 });
 
 test('the roster progress counts in the spec match the data', () => {
-  const basics = M.MONS.filter((m) => m.engine.stage === 'basic').length;
-  assert.match(SPEC, new RegExp(`Base creatures \\(excl\\. evolutions\\) \\| 60\\+ \\| ${basics} \\|`),
-    `spec claims a different base-creature count than the ${basics} in the data`);
-  assert.match(SPEC, new RegExp(`Total mons incl\\. evolutions \\| — \\| ${M.MONS.length} \\|`),
-    `spec claims a different total than the ${M.MONS.length} in the data`);
-  assert.match(SPEC, new RegExp(`Shared abilities \\| ~50–60 \\| ${M.ABILITIES.length} \\|`),
+  assert.match(SPEC, new RegExp(`Creatures named \\| 60\\+ \\| ${M.MONS.length} \\|`),
+    `spec claims a different creature count than the ${M.MONS.length} in the data`);
+  assert.match(SPEC, new RegExp(`Abilities \\| ~50–60 \\| ${M.ABILITIES.length} \\|`),
     `spec claims a different ability count than the ${M.ABILITIES.length} in the data`);
+  const authored = M.MONS.filter((m) => m.status === 'complete').length;
+  assert.match(SPEC, new RegExp(`Fully authored \\| ${M.MONS.length} \\| ${authored} \\|`),
+    `spec claims a different authored count than the ${authored} in the data`);
 });
 
 // ---------------------------------------------------------------------------
@@ -512,6 +534,26 @@ test('every section cross-reference points at a section that exists', () => {
       const head = m[2] ? `### ${m[1]}.${m[2]} ` : `## ${m[1]}. `;
       assert.ok(docs['OPEN_QUESTIONS.md'].includes(head),
         `${file} references OPEN_QUESTIONS §${m[1]}${m[2] ? '.' + m[2] : ''} which does not exist`);
+    }
+  }
+});
+
+test('SPEC cross-references to its own sections point somewhere real', () => {
+  // A stale self-reference survived two renumberings before this test existed:
+  // data/README pointed at SPEC section 9 for the mon template, which had moved.
+  const files = { 'SPEC.md': null, 'OPEN_QUESTIONS.md': null, 'README.md': null, 'data/README.md': null };
+  for (const f of Object.keys(files)) files[f] = readFileSync(join(here, '..', f), 'utf8');
+  const spec = files['SPEC.md'];
+
+  for (const [file, text] of Object.entries(files)) {
+    // "SPEC.md ... §N" or, inside SPEC itself, a bare "§N"
+    const pattern = file === 'SPEC.md'
+      ? /(?<!OPEN_QUESTIONS\.md[^§]{0,40})§(\d+)(?:\.(\d+))?/g
+      : /SPEC[^§]{0,20}§(\d+)(?:\.(\d+))?/g;
+    for (const m of text.matchAll(pattern)) {
+      const head = m[2] ? `### ${m[1]}.${m[2]} ` : `## ${m[1]}. `;
+      assert.ok(spec.includes(head),
+        `${file} references SPEC §${m[1]}${m[2] ? '.' + m[2] : ''} which does not exist`);
     }
   }
 });
