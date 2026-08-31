@@ -2299,18 +2299,101 @@ const mechanicsData = {
     "blockedOn": "What does BURN do? Chip damage, an ATK cut, both? Fireproof already grants immunity to it, so the immunity exists before the condition does."
   },
   "terrain": {
-    "status": "shape-only",
-    "$comment": "WATER terrain is the first terrain the design has named (Moving Waters). Water and Dragon are both 'terrain setup' roles, so this system is load-bearing for two types.",
-    "named": [
+    "status": "proposed",
+    "$comment": "One terrain per type -- ten in total. Each grants the buff its type most needs, read straight off that type's stated weakness. PROPOSED: the principle is the design's, the specific buffs are mine.",
+    "principle": "A terrain patches exactly the flaw its type's role statement names. Fire is frail, so its terrain gives bulk; Steel is slow, so its terrain gives speed.",
+    "activeAtOnce": 1,
+    "$activeNote": "PROPOSED. Setting a terrain replaces the one standing. If several could co-exist, terrain-setting types would stack buffs rather than compete for the field.",
+    "durationTurns": 5,
+    "buffsOnlyItsOwnType": true,
+    "$buffNote": "PROPOSED. A terrain buffs creatures of its own type only, which makes it a team tool rather than a neutral field effect -- and keeps Water and Dragon, the two terrain-setting roles, from simply buffing whatever they brought.",
+    "terrains": [
       {
-        "id": "water",
-        "name": "WATER",
-        "definedBy": "Moving Waters reads it.",
-        "effect": null,
-        "setBy": null
+        "type": "Normal",
+        "id": "steady-ground",
+        "name": "Steady Ground",
+        "need": "no bonuses of its own",
+        "grants": "Move energy costs are reduced 25%",
+        "kind": "efficiency"
+      },
+      {
+        "type": "Fire",
+        "id": "ashfield",
+        "name": "Ashfield",
+        "need": "frail",
+        "grants": "+0.5 DEF and +0.5 S.DEF modifier (x1.5 each)",
+        "kind": "resistance"
+      },
+      {
+        "type": "Water",
+        "id": "tide",
+        "name": "Tide",
+        "need": "frail, usually needs set up",
+        "grants": "Restore 1/8 max HP at end of turn",
+        "kind": "healing"
+      },
+      {
+        "type": "Earth",
+        "id": "rich-soil",
+        "name": "Rich Soil",
+        "need": "low natural kill power",
+        "grants": "+0.5 ATK and +0.5 S.ATK modifier (x1.5 each)",
+        "kind": "damage"
+      },
+      {
+        "type": "Steel",
+        "id": "forge",
+        "name": "Forge",
+        "need": "hellah slow",
+        "grants": "+1 SPD modifier (x2)",
+        "kind": "speed"
+      },
+      {
+        "type": "Psychic",
+        "id": "resonance",
+        "name": "Resonance",
+        "need": "frail",
+        "grants": "+0.5 S.DEF modifier, and support moves affect both allies",
+        "kind": "resistance"
+      },
+      {
+        "type": "Dark",
+        "id": "gloom",
+        "name": "Gloom",
+        "need": "no recovery if setup fails",
+        "grants": "Restore stamina to one move at end of turn",
+        "kind": "recovery"
+      },
+      {
+        "type": "Light",
+        "id": "radiance",
+        "name": "Radiance",
+        "need": "one note, not much variety or power",
+        "grants": "Move power +25%",
+        "kind": "power"
+      },
+      {
+        "type": "Dragon",
+        "id": "skyfall",
+        "name": "Skyfall",
+        "need": "low variety in moves",
+        "grants": "Moves cost no stamina",
+        "kind": "efficiency"
+      },
+      {
+        "type": "Phantom",
+        "id": "veil",
+        "name": "Veil",
+        "need": "needs set ups and luck",
+        "grants": "Conditional effects and procs always trigger",
+        "kind": "consistency"
       }
     ],
-    "blockedOn": "Nothing in the roster or ability list CREATES terrain yet, so Moving Waters is currently a dead ability. What sets WATER terrain, how long does it last, and can more than one terrain be active?"
+    "openRules": [
+      "Who sets terrain? Water and Dragon are the two 'terrain setup' roles, but nothing in the roster or ability list creates one yet.",
+      "Does a terrain persist between battles like energy and stamina, or clear with the battle?",
+      "Can a terrain be removed rather than replaced? Light is the denial type and this looks like its job."
+    ]
   },
   "statModification": {
     "status": "proposed",
@@ -2345,6 +2428,30 @@ const mechanicsData = {
       }
     ],
     "$scope": "Battle-only. Modifiers clear when the battle ends and never alter stored stats."
+  },
+  "damageOverTime": {
+    "status": "specified",
+    "$comment": "The general shape for every damage-over-time effect: X damage per turn scaling with level, for Y turns. BURN is the first instance.",
+    "rule": "per-turn damage scales linearly from minDamage at level 1 to maxDamage at capLevel, then stays flat; duration is rolled in [minTurns, maxTurns]",
+    "$capNote": "Levels run to 99. BURN caps at level 40, so the last 59 levels buy no extra burn -- the same shape crit uses, which caps at 60.",
+    "effects": [
+      {
+        "id": "burn",
+        "name": "BURN",
+        "category": "special",
+        "minDamage": 5,
+        "maxDamage": 15,
+        "capLevel": 40,
+        "minTurns": 2,
+        "maxTurns": 5,
+        "$note": "Applied by Aspect of Flame's contact moves at 30%. Fireproof grants immunity."
+      }
+    ],
+    "openRules": [
+      "Is the per-turn damage reduced by S.DEF, or is 'special damage' only saying it is not physical? Flat is assumed here.",
+      "Does re-applying BURN refresh the duration, stack a second instance, or do nothing?",
+      "Does the damage tick at end of turn, and can it knock a creature out?"
+    ]
   }
 };
 
