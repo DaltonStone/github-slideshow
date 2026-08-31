@@ -70,11 +70,10 @@ export const typeData = {
       "Dragon": 0.5
     },
     "Psychic": {
-      "Light": 2,
       "Dragon": 2,
+      "Steel": 2,
       "Psychic": 0.5,
       "Dark": 0.5,
-      "Steel": 0.5,
       "Normal": 0
     },
     "Dark": {
@@ -88,7 +87,6 @@ export const typeData = {
     "Light": {
       "Dark": 2,
       "Phantom": 2,
-      "Light": 0.5,
       "Psychic": 0.5,
       "Steel": 0.5
     },

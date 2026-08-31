@@ -52,100 +52,54 @@ guides rather than rules. If evasion is not a strong mechanic, Phantom is a
 trap type. Options: give Phantom a resistance (Earth reads well — nothing to
 stand on), or accept it as a glass-cannon type and rewrite the §7 default.
 
-### 1.3 Dark is now the second-best type in the game
+### 1.3 The Dark / Light rivalry, and what it cost Steel
 
-Making Dark↔Light mutual gave Light the second weakness it needed (Psychic and
-Dark), but it moved Dark from an even attacker to a dominant one:
+**Settled.** Dark and Light hit each other for 2× and are each other's only
+weakness — a closed rivalry nothing else in the game can interfere with. Light is
+otherwise **even**: nothing is super-effective into it, nothing resists it. Its
+power comes from **denial acting first** (SPEC §4.1), not from the chart.
 
-| | Offence | Defence | Notes |
-|---|---|---|---|
-| Dragon | +3 | +2 | 4 super-effective, resisted only by Steel |
-| **Dark** | **+2** | **+2** | 4 super-effective, only *one* weakness, and 6 of the game's 18 3.0× pairings |
-| Light | −1 | **−1** | 2 weaknesses, 1 resistance — now tied with Phantom as the softest type |
+Three edits made this work:
 
-The problem is that Dark's designated answer is Light, and Light now loses the
-exchange: mutual 2× makes it a race, and Dark is +2/+2 while Light is −1/−1 with
-a role described as "one note, not much variety or power".
-
-**Suggested fix, which the role already implies: denial acts first.** Give Light
-priority on its denial moves specifically. Countering something reactively is
-what denial *is*, and it turns the mutual 2× into a genuine race — Light's edge
-is tempo, Dark's is raw power — instead of a race Dark simply wins. It costs
-nothing on the chart.
-
-### 1.5 The starter triangle is broken at final stage — needs a decision
-
-The starters now gain a second type when they evolve:
-
-| Line | Basic | Evolved | Final |
-|---|---|---|---|
-| Fire  | Emberkit | Cindermaw | Pyrelash **Fire/Phantom** |
-| Water | Rillet | Tidecalf | Brinemoor **Water/Psychic** |
-| Earth | Loambit | Cragmole | Terrabulk **Earth/Steel** |
-
-At basic and evolved stage this is the clean Water → Fire → Earth → Water cycle.
-At final stage it is not a cycle at all. Simulated at L50 with a 60-power STAB
-move, each using its own better offensive stat:
-
-| Matchup | Hits to KO | Winner |
-|---|---|---|
-| Pyrelash vs Brinemoor | 2 vs 2 | **Pyrelash** — tied on damage, and it is twice as fast (116 vs 57) |
-| Brinemoor vs Terrabulk | 3 vs 2 | Terrabulk |
-| Terrabulk vs Pyrelash | 5 vs 2 | **Pyrelash** |
-
-**Pyrelash beats both of the others.** Two separate causes:
-
-1. **Phantom hits Psychic for 2×.** So the Fire starter's second type happens to
-   be super-effective against the Water starter's second type, cancelling the
-   Water-beats-Fire leg of the cycle.
-2. **Earth/Steel is the only dual typing in the entire game that Fire hits for
-   3.0×** — Fire is 2× against both halves, so they stack. Meanwhile Terrabulk's
-   own two types are *both* resisted by Fire/Phantom, so the best it can manage
-   back is 0.5×. That is a 6× swing, and it is between two starters.
-
-#### The cheapest fix: Water/Psychic → **Water/Light**
-
-One type swap. Phantom is neutral into Light, so cause (1) disappears and the
-cycle comes back:
-
-| Matchup | Hits to KO | Winner |
-|---|---|---|
-| Pyrelash vs Brinemoor | 3 vs 2 | Brinemoor ✓ |
-| Brinemoor vs Terrabulk | 3 vs 2 | Terrabulk ✓ |
-| Terrabulk vs Pyrelash | 5 vs 2 | Pyrelash ✓ |
-
-Water → Fire → Earth → Water, restored. Light also suits Brinemoor better than
-Psychic does: §7 gives Light "max SpD, healer/support", and Brinemoor already
-runs Tidewater and Steady. Its defensive spread becomes 2× to Earth/Psychic/Dragon
-and 0.5× to five types — bulky without being oppressive.
-
-#### Cause (2) is separate and survives the fix
-
-Even with the cycle restored, Fire beats Earth at 3.0× while the other two legs
-are 2.0×, and Terrabulk can only answer at 0.5×. Two mitigations, both of which
-the design already half-contains:
-
-- **Bedrock** ("cannot be KO'd from full HP in one hit; survives at 1") is
-  precisely the insurance a 3× weakness needs, and is already in Terrabulk's
-  ability pool. Making it the default active ability turns the matchup from
-  "deleted" into "very bad".
-- **Terrabulk's offence is the real problem, and it is a movepool problem.** A
-  Water-type coverage move reaches Fire/Phantom for 2×. Move pools are unwritten
-  anyway, so this costs nothing to fix later.
-
-#### Other options considered
-
-| Option | Effect |
+| Edit | Why |
 |---|---|
-| Fire/Phantom → **Fire/Light** | Also restores the cycle, but loses the ghost-fire concept, which looks like the more interesting design. |
-| Earth/Steel → **Earth/Dragon** | Makes all three legs a clean symmetric 2×, and Terrabulk resists three types at 0.25×. But Dragon is meant to be rare, and Steel fits the "smelted, not gathered" flavour. |
-| Accept a strict power ranking | Defensible — plenty of games do not keep a final-stage cycle. But a 6× swing between two starters is a lot to hand the player at character-select. |
+| `Dark → Light` 0.5 → 2 | Makes the rivalry mutual. |
+| `Psychic → Light` 2 → 1 | Light goes even on defence. |
+| `Psychic → Steel` 0.5 → 2 | Pays Psychic back — Light was its only target besides Dragon. |
 
-**Recommendation: Water/Light, plus Bedrock as Terrabulk's default.** It is one
-field in `data/mons.json` and it is reversible.
+#### The bill landed on Steel, harder than expected
 
-Note this whole analysis depends on the physical/special split, which the spec
-still never states (§2). If special moves do not use SpA/SpD, these numbers change.
+Flipping `Psychic → Steel` from 0.5 to 2 is a two-notch swing: Steel did not just
+lose a resistance, it gained a weakness.
+
+| | Before | After |
+|---|---|---|
+| Steel defensive score | **+3, best in the game** | **+1, joint fourth** |
+| Steel weaknesses | 3 (Fire, Water, Earth) | **4 (+ Psychic) — most of any type** |
+| Steel resistances | 6 | 5 (still the most) |
+| Best defensive types | Steel | Normal, Dark, Dragon (all +2) |
+
+Steel keeps the most resistances in the game, and "soft to the three elements and
+to mind-attacks, tough against everything else" is a coherent heavy-armour
+profile. But **Steel is no longer the defensive anchor**, which sits awkwardly
+with its role ("Durability and Damage"). Its chart offence is also the worst in
+the game at −4. Steel now has to get *both* halves of its role from raw stats,
+with the chart actively working against it.
+
+**If the durability crown matters, the cheap fix is `Phantom → Steel` 1 → 0.5**
+— a ghost gets no purchase on solid plate. That returns Steel to six resistances
+and +2, level with the other tanks, without undoing anything above.
+
+#### Still open
+
+- Do **all** Light moves get priority, or only the denial subset? It should be
+  the subset, or Light becomes a universal first-striker.
+- How do two priority moves resolve against each other?
+- Can anything out-prioritise denial? Something probably should.
+- Dark remains the second-best type on the chart (+2/+2, four super-effective
+  targets, one weakness). Light is now its only check, and that check is a
+  tempo mechanic rather than a stat one — which is the intent, but it means the
+  priority rule is load-bearing for the whole Spirit balance.
 
 ### 1.4 The 3.0× ceiling is rare, and that is working
 

@@ -50,9 +50,9 @@ Attacker → defender. `2` = effective (+100%), `0.5` = ineffective (−50%),
 | **Water**   | – | **2** | 0.5 | 0.5 | **2** | – | – | – | 0.5 | – |
 | **Earth**   | – | 0.5 | **2** | 0.5 | **2** | – | – | – | 0.5 | – |
 | **Steel**   | **2** | 0.5 | 0.5 | 0.5 | 0.5 | – | – | – | 0.5 | – |
-| **Psychic** | **0** | – | – | – | 0.5 | 0.5 | 0.5 | **2** | **2** | – |
+| **Psychic** | **0** | – | – | – | **2** | 0.5 | 0.5 | – | **2** | – |
 | **Dark**    | **2** | – | – | – | 0.5 | **2** | 0.5 | **2** | – | **2** |
-| **Light**   | – | – | – | – | 0.5 | 0.5 | **2** | 0.5 | – | **2** |
+| **Light**   | – | – | – | – | 0.5 | 0.5 | **2** | – | – | **2** |
 | **Dragon**  | – | **2** | **2** | **2** | 0.5 | – | – | – | **2** | – |
 | **Phantom** | **0** | – | – | – | – | **2** | 0.5 | – | – | **2** |
 
@@ -60,11 +60,15 @@ Attacker → defender. `2` = effective (+100%), `0.5` = ineffective (−50%),
 
 - **Elemental cycle:** Water → Fire → Earth → Water. Each beats the next for 2×
   and is resisted by it for 0.5×, so every pair is a clean one-way trade.
-- **Spirit ring:** Psychic → Light and Dark → Psychic are one-way trades like
-  the elements, but **Dark and Light hit each other for 2×**. Rule-breaker and
-  denial are each other's answer, so neither switches in safely and the exchange
-  is a race rather than a counter. This is the only mutually super-effective
-  pair in the chart, and a test keeps it that way.
+- **Dark and Light are a closed rivalry.** They hit each other for 2×, and they
+  are each other's *only* weakness — nothing else in the game punishes either
+  one. Rule-breaker and denial neither switch in safely against each other, and
+  the exchange is a race rather than a counter. This is the only mutually
+  super-effective pair in the chart, and a test keeps it that way.
+- **Light is even.** Aside from Dark, nothing is super-effective into Light and
+  nothing resists it. Its power is meant to come from **acting first** (see §4.1)
+  rather than from the chart, which is what reactive denial should do.
+- **Dark → Psychic** is a one-way trade like the elements.
 - **Steel** is the defensive anchor: it resists six types and is neutral to a
   seventh, but is soft to all three elements and has almost no offense of its
   own (2× on Normal only).
@@ -127,6 +131,22 @@ Worked examples:
 A dual type therefore trades peak power for coverage: it gets a smaller bonus,
 but on twice as many move types. STAB is a property of the *user*, not the
 target, and applies independently of type effectiveness.
+
+### 4.1 Denial acts first
+
+**Light's denial moves have priority.** A move that undoes, cancels or blocks
+another effect resolves before the effect it is answering, regardless of SPD.
+
+This is the whole of Light's power budget. Light is even on the chart precisely
+because it does not need defensive help: a counter that resolves second is not a
+counter. The rule also makes the mutual 2× with Dark a genuine race — Light's
+edge is tempo, Dark's is raw force — rather than a race Dark simply wins on
+stats.
+
+Not yet decided: whether *all* Light moves get priority or only the denial
+subset (it should be the subset), how ties between two priority moves resolve,
+and whether anything can out-prioritise it. See
+[`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §1.3.
 
 ---
 

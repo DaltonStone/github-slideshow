@@ -90,17 +90,28 @@ test('the elemental cycle is a clean one-way trade', () => {
   }
 });
 
-test('the spirit ring is a cycle with one mutual pair', () => {
-  // Psychic -> Light and Dark -> Psychic are one-way trades like the elements.
-  for (const [strong, weak] of [['Psychic', 'Light'], ['Dark', 'Psychic']]) {
-    assert.equal(M.chartValue(strong, weak), 2, `${strong} -> ${weak}`);
-    assert.equal(M.chartValue(weak, strong), 0.5, `${weak} -> ${strong}`);
-  }
-  // Dark and Light are the deliberate exception: rule-breaker and denial hit
-  // each other for 2x, so neither can switch in safely and the exchange is a
-  // race rather than a counter.
+test('Dark beats Psychic in a one-way trade', () => {
+  assert.equal(M.chartValue('Dark', 'Psychic'), 2);
+  assert.equal(M.chartValue('Psychic', 'Dark'), 0.5);
+});
+
+test('Dark and Light are locked in a mutual 2x, and are each other only weakness', () => {
+  // Rule-breaker and denial: neither switches in safely, and the exchange is a
+  // race rather than a counter. Nothing else in the game punishes either one.
   assert.equal(M.chartValue('Light', 'Dark'), 2);
   assert.equal(M.chartValue('Dark', 'Light'), 2);
+  assert.deepEqual(M.TYPES.filter((a) => M.chartValue(a, 'Light') === 2), ['Dark']);
+  assert.deepEqual(M.TYPES.filter((a) => M.chartValue(a, 'Dark') === 2), ['Light']);
+});
+
+test('Light is even: Dark aside, nothing beats it and nothing resists it', () => {
+  // Light's power is meant to come from acting first (denial has priority),
+  // not from the chart. So its defensive row is deliberately flat.
+  for (const a of M.TYPES) {
+    if (a === 'Dark') continue;
+    assert.equal(M.chartValue(a, 'Light'), 1,
+      `${a} -> Light should be neutral, Light is even on defence`);
+  }
 });
 
 test('Dark and Light are the only mutually super-effective pair', () => {
@@ -130,12 +141,18 @@ test('Normal is also immune to Psychic', () => {
   assert.equal(M.chartValue('Psychic', 'Normal'), 0);
 });
 
-test('Steel is the defensive anchor: soft to the elements, resists the rest', () => {
-  for (const el of ['Fire', 'Water', 'Earth']) {
+test('Steel is heavy armour: soft to the elements and to Psychic, resists the rest', () => {
+  // Psychic -> Steel was flipped from 0.5 to 2 to pay Psychic back for losing
+  // Light as a target. That cost Steel its spot as the best defensive type; it
+  // still resists more than anything else, but it also has the most weaknesses.
+  for (const el of ['Fire', 'Water', 'Earth', 'Psychic']) {
     assert.equal(M.chartValue(el, 'Steel'), 2, `${el} -> Steel`);
   }
   const resisters = M.TYPES.filter((a) => M.chartValue(a, 'Steel') === 0.5);
-  assert.equal(resisters.length, 6);
+  assert.equal(resisters.length, 5);
+  const mostResistances = Math.max(...M.TYPES.map((t) =>
+    M.TYPES.filter((a) => M.chartValue(a, t) === 0.5).length));
+  assert.equal(resisters.length, mostResistances, 'Steel should still resist the most');
 });
 
 test('Dragon beats and resists the whole elemental cycle', () => {
