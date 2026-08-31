@@ -23,7 +23,7 @@ before lookup so future resistance sources cannot push a defender past 0.25×.
 
 ## mons.json
 
-Each mon is the three tabs of the template in `SPEC.md` §12, as three objects.
+Each mon is the three tabs of the template in `SPEC.md` §13, as three objects.
 
 ### `engine`
 

@@ -428,7 +428,59 @@ unbounded multiplier long before the roster is finished.
 
 ---
 
-## 10. Energy and stamina
+## 10. Status and terrain
+
+### 10.1 Damage over time
+
+Every damage-over-time effect uses one shape: **X damage per turn, scaling with
+level, for Y turns**.
+
+**BURN** is the first instance. Applied by Aspect of Flame's contact moves at
+30%; `Fireproof` grants immunity.
+
+| | |
+|---|---|
+| Damage | 5 per turn at L1, rising to **15 at L40**, flat thereafter |
+| Duration | **2–5 turns**, rolled |
+| Category | Special |
+
+Levels run to 99, so the last 59 buy no extra burn — the same shape crit uses,
+which caps at 60. Burn is an early- and mid-game threat by construction.
+
+**The duration roll swings the result more than the level scaling does.** Two
+turns versus five is 2.5× at every level, against 3× across the whole level
+range. See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §9.8.
+
+### 10.2 Terrain — PROPOSED
+
+**One terrain per type; ten in total.** Each grants the buff its type most
+needs, read straight off that type's stated weakness in §7. Fire is frail, so
+Ashfield gives bulk. Steel is slow, so Forge gives speed.
+
+| Type | Terrain | Answers | Grants |
+|---|---|---|---|
+| Normal | Steady Ground | no bonuses of its own | move energy costs −25% |
+| Fire | **Ashfield** | frail | +0.5 DEF and S.DEF (×1.5) |
+| Water | **Tide** | frail, needs setup | restore 1/8 max HP per turn |
+| Earth | Rich Soil | low natural kill power | +0.5 ATK and S.ATK (×1.5) |
+| Steel | Forge | hellah slow | +1 SPD (×2) |
+| Psychic | Resonance | frail | +0.5 S.DEF; support moves hit both allies |
+| Dark | Gloom | no recovery if setup fails | restore stamina to one move per turn |
+| Light | Radiance | one note, low power | move power +25% |
+| Dragon | Skyfall | low move variety | moves cost no stamina |
+| Phantom | Veil | needs setups and luck | conditional effects always trigger |
+
+**One terrain stands at a time**, for **5 turns**, and **buffs only its own
+type** — which keeps Water and Dragon, the two terrain-setting roles, from
+simply buffing whatever they brought. All three of those are proposed.
+
+The buffs are mine; the principle is the design's. What is still missing is
+anything that **sets** a terrain — so `Moving Waters` remains unreachable in
+play even though WATER terrain now exists.
+
+---
+
+## 11. Energy and stamina
 
 **Both persist between battles.** This is the decision that changes the shape of
 the game: the unit of play stops being a battle and becomes a run of them. The
@@ -505,7 +557,7 @@ anything else.
 
 ---
 
-## 11. Duels and decks
+## 12. Duels and decks
 
 Creatures are captured onto **cards**. Anyone holding them is a **Deck Holder**;
 those who battle competitively are **Duelists**.
@@ -527,7 +579,7 @@ Two things this settles that were open:
 - **Doubles.** Duels are **2v2**. The long-running question is answered: support
   archetypes are first-class in the competitive format, not a niche. Outside the
   arena the rules are lenient and battles are usually **singles**.
-- **Party size.** Six, which the persistent-energy model in §10 needed — bench
+- **Party size.** Six, which the persistent-energy model in §11 needed — bench
   recovery only works if there is a bench.
 
 **Support cards are a wholly new entity** and nothing about them is designed:
@@ -536,7 +588,7 @@ against twelve creatures suggests they are the larger half of the game.
 
 ---
 
-## 12. Mon template
+## 13. Mon template
 
 Every mon is authored as three tabs.
 
@@ -564,7 +616,7 @@ The JSON encoding of this template is documented in
 
 ---
 
-## 13. Targets
+## 14. Targets
 
 | Item | Target | Now |
 |---|---|---|
@@ -578,7 +630,7 @@ Every creature is currently a **concept entry** — the name, typing and evoluti
 links are real and tested; stats, abilities, size and dex text are null until
 authored. `data/mons.json` marks each with `status`.
 
-## 14. Not yet designed
+## 15. Not yet designed
 
 - **The damage formula itself.** This spec fixes the *multipliers* (type
   effectiveness, STAB) and states that level is not a term, but never states the

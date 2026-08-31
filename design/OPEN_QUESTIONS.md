@@ -264,7 +264,7 @@ undefined condition cannot be balanced or implemented.
 
 Settled: **energy and stamina persist between battles**, **energy at 0 knocks the
 mon out**, **no stamina means Struggle**, and **supports can restore both**.
-Modelled in [`lib/energy.js`](lib/energy.js) and SPEC §10.
+Modelled in [`lib/energy.js`](lib/energy.js) and SPEC §11.
 
 That third answer is bigger than it looks. Energy is not a debuff track, it is a
 **second health bar** — there are now two independent ways to lose a mon, and the
@@ -513,6 +513,77 @@ parallel damage model.
 This closes the oldest open question in the file (Swarm was named once, by
 `Royal`, and never defined) and removes the only mechanic that would have needed
 its own damage rules. Ability count 31 → 29.
+
+### 9.8 BURN's duration roll outweighs everything else about it
+
+The shape is good — one curve for every damage-over-time effect, capping at L40
+the way crit caps at 60, so DoT is deliberately an early- and mid-game threat.
+Two things about the numbers are worth a look.
+
+**A long burn kills a frail creature outright at low level.** Measured against
+the level curve, as a share of a frail creature's maximum HP:
+
+| Level | Tick | 2 turns | 5 turns |
+|---|---|---|---|
+| **L1** | 5 | 43% | **109%** |
+| L20 | 10 | 37% | 93% |
+| L40 | 15 | 34% | 85% |
+| L60 | 15 | 25% | 62% |
+| L99 | 15 | 16% | 40% |
+
+At level 1 a five-turn burn is more than the whole health bar. Through L1–40 it
+sits at 85–109%. That is not damage over time, it is a **delayed execution** —
+and it comes from a 30% proc on a contact move, which is the starter's ability.
+
+Against a bulky creature it is gentler but still large: 26–69% through L40.
+
+**The duration roll matters more than 39 levels of growth.** Two turns versus
+five is **2.5×** at every level, while the whole level range is 3×. So the
+biggest single factor in how much a burn hurts is a coin flip, not the
+creature, the level, or anything either player decided.
+
+Three ways to pull it in, none of which need the shape to change:
+
+1. **Narrow the duration** to 3–4 turns. The swing drops from 2.5× to 1.33× and
+   burn becomes a number you can plan around.
+2. **Scale damage by the target's max HP** rather than a flat amount, so a
+   frail creature is not disproportionately executed by it.
+3. **Leave it, and make the 30% proc the tuning knob** — a coin flip that only
+   fires 30% of the time is a different proposition. But then the *other* DoT
+   effects using this shape all inherit the swing.
+
+Also unanswered: whether the per-turn damage is reduced by S.DEF or is flat
+("special damage" may only mean "not physical"), whether re-applying refreshes
+or stacks, and whether a burn tick can be the thing that knocks a creature out.
+
+### 9.9 Terrain — the principle is strong, the gap is who sets it
+
+**One terrain per type, each granting what that type most needs**, is a genuinely
+good rule: it turns the type-weakness list from flavour text into a design
+generator. Every terrain in SPEC §10.2 was read straight off the weakness in the
+role statement — Fire is frail so Ashfield gives bulk, Steel is slow so Forge
+gives speed, Dark has no recovery if setup fails so Gloom gives recovery.
+
+It also quietly fixes **Light**, which has been the awkward type all along: a
+terrain that grants +25% move power patches "one note, not much variety or
+power" exactly.
+
+Three things still open, one of them blocking:
+
+1. **Nothing sets terrain.** Water and Dragon are the two "terrain setup" roles,
+   but no move or ability in the game creates one — so `Moving Waters` is still
+   dead in play even though WATER terrain now exists. This is the blocker.
+2. **Does terrain persist between battles**, as energy and stamina do? If it
+   does, terrain becomes a deck-building decision rather than an in-battle one.
+3. **Can terrain be removed rather than replaced?** Light is the denial type and
+   clearing a field looks exactly like its job — which would make Light the
+   answer to Water and Dragon as well as to Dark.
+
+One consequence worth noting: because a terrain buffs only its own type, a
+Water creature that sets Tide is helping its Water teammates and nobody else.
+In a 2v2 format with a team of six, that pushes toward **mono-type or
+two-type teams**, which may or may not be what you want the deck-building to
+reward.
 
 ## 10. Questions for the next pass
 

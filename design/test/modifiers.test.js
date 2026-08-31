@@ -111,12 +111,15 @@ test('Layered Stone is strong but not an immunity', () => {
   assert.ok(buffed < 1000, 'sanity: still a real number an attacker can work against');
 });
 
-test('Moving Waters is currently unreachable, and the data says so', () => {
-  // It keys off WATER terrain, and nothing in the game creates terrain.
+test('WATER terrain is defined now, but still nothing creates one', () => {
+  // Moving Waters keys off WATER terrain. The terrain exists as a designed
+  // effect; what is still missing is any move or ability that SETS it, so the
+  // ability remains unreachable in play.
   const terrain = M.mechanicsData.terrain;
-  assert.equal(terrain.status, 'shape-only');
-  assert.equal(terrain.named[0].setBy, null,
-    'if something starts setting terrain, this should stop being null');
+  assert.equal(terrain.status, 'proposed');
+  assert.ok(terrain.terrains.some((x) => x.type === 'Water'), 'WATER terrain should exist');
+  assert.ok(terrain.openRules.some((r) => r.toLowerCase().includes('who sets terrain')),
+    'the gap that keeps Moving Waters dead should stay recorded');
 });
 
 // ---------------------------------------------------------------------------
