@@ -443,6 +443,10 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         <input id="lv" type="range" min="1" max="99" value="50">
       </div>
       <div class="field">
+        <label class="cap" for="en">Energy <span id="env">100</span> &mdash; <span id="entier">Fresh</span></label>
+        <input id="en" type="range" min="0" max="100" value="100">
+      </div>
+      <div class="field">
         <label class="cap" for="cls">Attack stat</label>
         <select id="cls">
           <option value="phys">Physical &mdash; ATK vs DEF</option>
@@ -488,6 +492,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
       <div class="field">
         <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
         <input id="scale" type="range" min="40" max="220" step="5" value="100">
+        <p class="panel-note" style="margin-top:8px">Energy and stamina both persist between battles, so a full mon has about 18 turns of fighting in it. Exhausted is a floor &mdash; penalties stop deepening there.</p>
         <p class="panel-note" style="margin-top:8px">Crit chance runs 5% at L1 to 15% at L60, then stays flat. Crit damage is &times;1.5 and is still a placeholder &mdash; the design gives the chance curve, not the multiplier.</p>
       </div>
     </div>
@@ -614,8 +619,14 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
 
     var A = monById(Number($('atk').value));
     var D = monById(Number($('def').value));
-    var as = statsAt(A.engine.stats, level);
+    var energy = Number($('en').value);
+    var tier = tierFor(energy);
+    var asFresh = statsAt(A.engine.stats, level);
+    var as = applyEnergy(asFresh, energy);
     var ds = statsAt(D.engine.stats, level);
+
+    $('env').textContent = energy;
+    $('entier').textContent = tier.name;
 
     var modifier = (state.kindle ? 1.5 : 1) * (state.slow ? 1.2 : 1);
 
@@ -642,14 +653,17 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         ' &mdash; <b>' + Math.round(exp) + '</b> expected once the roll is counted.';
 
     var hits = hitsToKO(ds.hp, e.damage);
-    $('kos').innerHTML = e.damage === 0
-      ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
-      : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +
-        '</b> to KO ' + D.engine.name + ', at ' + ds.hp + ' HP.';
+    $('kos').innerHTML = tier.canBattle === false
+      ? '<b>' + A.engine.name + ' is Empty</b> and cannot take the field. This is what the hit would do if it could.'
+      : e.damage === 0
+        ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
+        : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +
+          '</b> to KO ' + D.engine.name + ', at ' + ds.hp + ' HP.';
 
     // multiplier chain
     var lines = [
-      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def, '', fmt(e.raw), false],
+      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def +
+        (tier.statMultiplier < 1 ? ' &nbsp;(' + tier.name + ': stats ×' + tier.statMultiplier + ')' : ''), '', fmt(e.raw), false],
       ['STAB &mdash; ' + (e.stab === 1 ? 'not its type' : (typesOf(A).length === 1 ? 'mono-type' : 'dual-type')), '×' + e.stab, fmt(e.raw * e.stab), e.stab === 1],
       ['Type &mdash; ' + $('mt').value + ' vs ' + typesOf(D).join('/'), '×' + e.effectiveness, fmt(e.raw * e.stab * e.effectiveness), e.effectiveness === 1],
       ['Abilities' + (modifier === 1 ? ' &mdash; none active' : ''), '×' + fmt(modifier), fmt(e.raw * e.stab * e.effectiveness * modifier), modifier === 1],
@@ -705,7 +719,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
 
   // ---- wiring ------------------------------------------------------------
 
-  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale'].forEach(function (id) {
+  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale', 'en'].forEach(function (id) {
     $(id).addEventListener('input', render);
   });
 

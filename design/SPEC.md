@@ -325,7 +325,26 @@ nothing else. `Voice` reaching what a projectile cannot is the hook for getting
 past shields, substitutes and summoned objects — see
 [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.3.
 
-### 9.2 Height and weight
+### 9.2 Proxies
+
+A **proxy** is anything that takes a mon's place: a summoned object, a decoy, a
+substitute, Jaxs' Jack-In-The-Box. The rule is absolute:
+
+> **While a proxy stands, every attack hits the proxy.** No delivery class gets
+> past it — not Voice, not Trap, not Ranged. A proxy has its own HP, and lasts
+> either a set number of turns or until it is destroyed.
+
+The only counterplay to a proxy is **not attacking**. That is the point: a proxy
+turns a turn into a fork — break it and pay whatever breaking it costs, or spend
+the turn on something else and let the summoner have the tempo.
+
+Because the rule is absolute and the reach is wide, four things it does *not*
+settle are tracked in [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.3 — whether
+non-damaging effects pass through, whether excess damage carries over when the
+proxy breaks, whether a second proxy can be raised while one stands, and whether
+a proxy can be healed.
+
+### 9.3 Height and weight
 
 Recorded per species in metres and kilograms. Flavour first, but `Body` moves
 and some others read them.
@@ -336,7 +355,54 @@ unbounded multiplier long before the roster is finished.
 
 ---
 
-## 10. Mon template
+## 10. Energy and stamina
+
+**Both persist between battles.** This is the decision that changes the shape of
+the game: the unit of play stops being a battle and becomes a run of them. The
+question during a fight is no longer "can I win this" but *"can I win this
+cheaply enough to still win the next five"*.
+
+They are two different axes, not one resource twice:
+
+| | What it limits | Scope |
+|---|---|---|
+| **Stamina** | *which move* — each move has its own uses | Per move |
+| **Energy** | *how long the mon can fight at all* | One pool per mon |
+
+### 10.1 Energy tiers — PROPOSED
+
+Numbers are a first cut; the shape is the part to argue with.
+
+| Tier | Energy | Stats | Accuracy | Move cost | |
+|---|---|---|---|---|---|
+| Fresh | 61–100 | ×1.00 | ×1.00 | ×1.00 | |
+| Worn | 31–60 | ×0.90 | ×0.95 | ×1.10 | |
+| Spent | 11–30 | ×0.80 | ×0.90 | ×1.25 | |
+| **Exhausted** | **1–10** | **×0.70** | **×0.85** | **×1.50** | **floor** |
+| Empty | 0 | ×0.70 | ×0.85 | ×1.50 | cannot battle |
+
+Energy scales the five fighting stats. **HP is never touched** — energy should
+make a mon fight worse, not shrink its health bar mid-run.
+
+**Exhausted is a hard floor and it is the load-bearing part.** Falling energy
+lowers stats *and* accuracy *and* raises move cost — a feedback loop straight
+into losing, and with persistence a single bad fight would tax the whole run.
+Below Exhausted the penalties stop deepening; Empty is no worse, it simply
+cannot take the field.
+
+At 2 energy per turn plus a 3-cost move, a full mon has **18 turns of fighting**
+— several battles, not one, and not endless.
+
+### 10.2 Restoration — PROPOSED
+
+Full rest at a base, partial restoration from items, and **benched mons recover
+5 per battle they sit out**. That last one is deliberate: it makes **rotation**
+the core management verb rather than item-spam, and it is why party size now
+matters to the combat math.
+
+---
+
+## 11. Mon template
 
 Every mon is authored as three tabs.
 
@@ -364,7 +430,7 @@ The JSON encoding of this template is documented in
 
 ---
 
-## 11. Targets
+## 12. Targets
 
 | Item | Target | Now |
 |---|---|---|
@@ -375,7 +441,7 @@ The JSON encoding of this template is documented in
 
 ---
 
-## 12. Not yet designed
+## 13. Not yet designed
 
 - **The damage formula itself.** This spec fixes the *multipliers* (type
   effectiveness, STAB) and states that level is not a term, but never states the
@@ -389,14 +455,14 @@ The JSON encoding of this template is documented in
   confusion; none of those are defined.
 - **Catching**, party size, switching, held items, the Swarm/`Colony` body
   system, and hazards (`Grounded` implies Earth hazards exist).
-- **Energy.** A pool separate from stamina (which is per-move uses). It falls
-  over time, and as it falls it degrades stats and accuracy and raises move
-  cost. The shape is recorded in [`data/mechanics.json`](data/mechanics.json);
-  the numbers are not, because they depend on a decision that has not been made.
-  See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.1.
 - **Affection.** How attached a mon is to its trainer, modifying stats by
   affection points and level with extra effects at maximum. Per-instance state,
-  not species data. See §6.2.
-- **Stamina** itself — per-move uses — is named but never defined.
+  not species data. Persistence was never in doubt; what is open is whether it
+  applies in competitive play. See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.2.
+- **Per-move stamina and energy costs**, which are move data.
+- **Restoration**: items, resting, and where a run resets. Proposed in
+  [`data/mechanics.json`](data/mechanics.json); nothing is decided.
+- **Party size**, which persistent energy makes load-bearing — rotation is the
+  intended answer to a tiring team, and that only works if there is a bench.
 
 See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) for the decisions these block.

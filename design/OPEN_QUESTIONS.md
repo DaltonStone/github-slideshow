@@ -265,84 +265,97 @@ undefined condition cannot be balanced or implemented.
 
 ## 6. The new systems
 
-### 6.1 Energy — blocked on one question
+### 6.1 Energy — ANSWERED: it persists. What that costs.
 
-Energy is a pool separate from stamina: it falls over time, and as it falls it
-degrades stats and accuracy and raises move cost. The shape is in
-[`data/mechanics.json`](data/mechanics.json) with `status: "unspecified"`, and no
-numbers are invented, because they all follow from one unanswered question:
+**Energy persists between battles**, and so does stamina. That is settled, and it
+is the largest structural decision in the project so far: MONS is a
+resource-management game, not a game of independent battles. A model is proposed
+in [`lib/energy.js`](lib/energy.js) and SPEC §10 — tiers, a mandatory floor at
+Exhausted, and bench recovery so that rotation is the management verb.
 
-> **Does energy persist between battles, or reset each battle?**
+What persistence now obliges the design to answer:
 
-- **Resets each battle** — a pacing mechanic. It makes long fights different
-  from short ones and rewards closing quickly. Self-contained and easy to tune.
-- **Persists** — a resource-management mechanic. Now the player is managing a
-  team across a day, deciding which mon to spend. Much richer, much bigger:
-  it needs restoration items, rest, and an overworld loop to matter.
+1. **What is the fail state?** A team can run out. Something must happen when it
+   does — forced return to base, a long rest that costs in-world time, or mons
+   that can still act at Empty in some reduced way. Right now Empty simply means
+   "cannot battle", which for a whole party is a soft-lock. **This is the most
+   important undefined rule in the game.**
+2. **Party size**, which was cosmetic and is now load-bearing. Bench recovery
+   only works if there is a bench, and the size of it sets how forgiving a run
+   is. Six is the genre default; three would make energy bite hard.
+3. **Where does a run reset?** Towns, camps, a limited number of rests. This is
+   the difficulty curve — the scarcity of restoration *is* the difficulty, more
+   than any enemy statline.
+4. **Per-move energy costs.** Move data; moves do not exist. A cheap weak move
+   versus an expensive strong one is now a real decision, which is a good axis
+   the design should use deliberately.
 
-These are different games. Every number below depends on which one it is.
+#### Two consequences worth noticing
 
-**Two design hazards worth building around either way:**
+**It validates the type roles.** Sustain (Earth, Water), support and healing
+(Light), and durability (Steel) are all worth more in a persistent-resource game
+than they would be in a game of isolated fights — they do not just win the
+battle, they save the run. Meanwhile the "frail, needs setup, and luck" types —
+**Phantom especially** — get harsher: a failed setup now costs resources that do
+not come back this battle *or* the next one. Variance is more expensive when
+resources persist. That is a coherent design, but Phantom is already the weakest
+defensive type, and this is a third tax on it.
 
-1. **The death spiral.** Low energy lowering stats *and* accuracy *and* raising
-   move cost is a positive feedback loop into losing. The player who falls
-   behind falls further behind through no further decision of their own. A
-   **floor** is required — below some threshold, the penalties stop deepening.
-   `mechanics.json` reserves a `floor` field for exactly this.
-2. **Two depleting resources is a lot.** Stamina (per-move uses) and energy
-   (global pool) both count down, and the player tracks both every turn. That
-   can be the game's identity — battles as attrition — but it is bookkeeping,
-   and it is worth being sure the second resource earns its place rather than
-   duplicating the first. If stamina limits *which move*, and energy limits
-   *how long you can fight at all*, they are genuinely different axes. If both
-   just mean "you run out", merge them.
+**Grinding becomes the balance risk.** With persistence, a player who takes it
+slow and rests often is strictly stronger than one who pushes. If the game has
+any competitive dimension, energy state has to be normalised for it, the same
+question §6.2 raises about affection.
 
-### 6.2 Affection — blocked on whether it is competitive
+### 6.2 Affection — still open
 
-Affection modifies stats by affection points and level, with extra effects at
-maximum. Per-instance state, not species data.
+Persistence was never the question. The open one is whether it applies in
+competitive play. If it does, it is a stat bonus obtained by grinding, and the
+"additional effects at maximum" — surviving a lethal hit, shrugging off status —
+are exactly what a competitive format cannot tolerate and a story mode loves.
+The usual answer is casual-only, normalised out of ranked.
 
-> **Does affection apply in competitive play?**
+### 6.3 Proxies — ANSWERED: they block everything
 
-If it does, it is a **stat bonus you get by grinding**, and any competitive
-format built on it is decided partly by time spent rather than decisions made.
-The standard answer in the genre is that affection applies in casual and
-single-player, and is normalised out of ranked. Worth deciding now, because it
-also settles whether affection effects can be strong (casual-only) or must stay
-cosmetic-adjacent (universal).
+**A proxy blocks all attacks.** No delivery class gets past it; Voice does not
+reach the mon behind the box. The only counterplay is to not attack. This is now
+a general rule covering anything that takes a mon's place, not a quirk of
+Jack-In-The-Box (SPEC §9.2).
 
-The "additional effects at maximum" are the interesting part and the risky part:
-effects like surviving a lethal hit or shrugging off status are exactly what a
-competitive format cannot tolerate but a story mode loves.
+That makes proxies strong, so four edges need settling before any proxy move is
+written:
 
-### 6.3 What the new systems fix, and what they open
+1. **Do non-damaging effects pass through?** "Blocks all *attacks*" does not say.
+   If status, stat drops and hazards land on the mon behind, proxies are a
+   tempo tool. If they are blocked too, a proxy is a full immunity turn and
+   considerably stronger.
+2. **Does excess damage carry through when the proxy breaks?** Absorbing it is
+   the safer default and makes a big proxy a reliable shield; carrying it over
+   makes proxy HP a real number to play around.
+3. **Can a second proxy go up while one stands?** If yes, an `untilDestroyed`
+   proxy is an unbounded stall engine — this is the one that most needs a "no".
+4. **Can a proxy be healed, and does it inherit the summoner's abilities?**
+   Thorns on a proxy, for instance, would punish the only counterplay the
+   opponent has.
 
-**Fixed.** `Thorns` finally has a definition of contact to key off, and it comes
-from the move's delivery class rather than a separate flag, so the two cannot
-drift apart.
+Jaxs' Jack-In-The-Box specifically still needs its own two answers, unchanged
+from before: the cost should be a fraction of **max** HP rather than current
+(35% of current gets *cheaper* the more desperate you are, which inverts the
+risk), and the reflect should be capped, since "50% of damage received" scales
+off a number the modifier stack has already shown can reach ×8.4.
 
-**Opened.**
+### 6.4 What the new systems fixed
 
-- **Voice vs. summoned objects.** `Voice` is non-contact and "reaches things a
-  projectile would not". That is the natural counterplay to Jaxs' Jack-In-The-Box
-  and to shields generally — a Voice move hits the mon behind the box. If that
-  is intended, it should be a stated rule, because it changes how the box's
-  mind-game plays out.
-- **Crit chance now interacts with the modifier stack.** Crit is no longer a
-  toggle but a real probability, and moves and abilities push it. `Lucky Day`
-  ("on turns divisible by 7, always crit") is now a guaranteed top-end roll that
-  stacks with Kindling and a 3.0× type hit: 1.5 × 1.25 × 3.0 × 1.5 = **8.4×**
-  before the formula runs. §2's cap question gets sharper, not softer.
-- **The crit damage multiplier is still a placeholder.** The design specifies
-  the chance curve and says moves modify "crit damage", but never says what crit
-  damage *is*. It sits at 1.5.
-- **Crit stops at L60 but levels run to 99.** Deliberate, per the design — worth
-  confirming that the last 39 levels buying no crit is intended rather than an
-  artefact of picking 60.
-- **Stamina is named but undefined.** Energy is "separate from stamina", which
-  means stamina now needs a definition too.
-- **Which moves read height and weight?** The cap is proposed at 4×; the moves
-  that use it do not exist yet.
+`Thorns` finally has a definition of contact to key off, and it comes from the
+move's delivery class rather than a separate flag, so the two cannot drift apart.
+
+Crit chance now interacts with the modifier stack: `Lucky Day` ("on turns
+divisible by 7, always crit") is a guaranteed top-end roll stacking with Kindling
+and a 3.0× hit — 1.5 × 1.25 × 3.0 × 1.5 = **8.4×** before the formula runs. §2's
+cap question gets sharper. The crit *damage* multiplier is also still a
+placeholder at 1.5; the design gives the chance curve and never the multiplier.
+
+Crit stops climbing at L60 while levels run to 99 — deliberate per the design,
+worth confirming the last 39 levels buying no crit is intended.
 
 ## 7. Naming
 

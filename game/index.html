@@ -443,6 +443,10 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         <input id="lv" type="range" min="1" max="99" value="50">
       </div>
       <div class="field">
+        <label class="cap" for="en">Energy <span id="env">100</span> &mdash; <span id="entier">Fresh</span></label>
+        <input id="en" type="range" min="0" max="100" value="100">
+      </div>
+      <div class="field">
         <label class="cap" for="cls">Attack stat</label>
         <select id="cls">
           <option value="phys">Physical &mdash; ATK vs DEF</option>
@@ -488,6 +492,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
       <div class="field">
         <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
         <input id="scale" type="range" min="40" max="220" step="5" value="100">
+        <p class="panel-note" style="margin-top:8px">Energy and stamina both persist between battles, so a full mon has about 18 turns of fighting in it. Exhausted is a floor &mdash; penalties stop deepening there.</p>
         <p class="panel-note" style="margin-top:8px">Crit chance runs 5% at L1 to 15% at L60, then stays flat. Crit damage is &times;1.5 and is still a placeholder &mdash; the design gives the chance curve, not the multiplier.</p>
       </div>
     </div>
@@ -1539,20 +1544,64 @@ const mechanicsData = {
     "$capNote": "PROPOSED. Ceiling on any weight-ratio term in a damage calc, so a very heavy mon against a very light one cannot produce an unbounded multiplier."
   },
   "energy": {
-    "status": "unspecified",
-    "$comment": "A pool separate from stamina (which is per-move uses). Falls over time; as it falls it degrades stats, accuracy, and raises move cost. Shape is recorded here so it can be filled in; the numbers are NOT invented because they depend on a decision that has not been made -- see OPEN_QUESTIONS.md section 6.1.",
-    "blockedOn": "Does energy persist between battles, or reset each battle? That decides whether this is a combat mechanic or a resource-management one, and every number below follows from it.",
-    "max": null,
-    "drainPerTurn": null,
-    "thresholds": [],
-    "$thresholdShape": {
-      "atOrBelow": "fraction of max",
-      "statMultiplier": null,
-      "accuracyMultiplier": null,
-      "moveCostMultiplier": null
-    },
-    "floor": null,
-    "$floorNote": "A floor is required. Low energy lowering stats AND accuracy AND raising cost is a positive feedback loop into losing; without a floor the loser cannot recover."
+    "status": "proposed",
+    "$comment": "PROPOSED, not stated by the design. Energy persists between battles, so this is a resource-management system, not a pacing one. Numbers are a first cut; the shape is the part to argue with.",
+    "persistsBetweenBattles": true,
+    "max": 100,
+    "drainPerTurn": 2,
+    "defaultMoveCost": 3,
+    "$moveCostNote": "Per-move energy cost is move data and does not exist yet; defaultMoveCost stands in.",
+    "tiers": [
+      {
+        "id": "fresh",
+        "name": "Fresh",
+        "aboveFraction": 0.6,
+        "statMultiplier": 1,
+        "accuracyMultiplier": 1,
+        "moveCostMultiplier": 1
+      },
+      {
+        "id": "worn",
+        "name": "Worn",
+        "aboveFraction": 0.3,
+        "statMultiplier": 0.9,
+        "accuracyMultiplier": 0.95,
+        "moveCostMultiplier": 1.1
+      },
+      {
+        "id": "spent",
+        "name": "Spent",
+        "aboveFraction": 0.1,
+        "statMultiplier": 0.8,
+        "accuracyMultiplier": 0.9,
+        "moveCostMultiplier": 1.25
+      },
+      {
+        "id": "exhausted",
+        "name": "Exhausted",
+        "aboveFraction": 0,
+        "statMultiplier": 0.7,
+        "accuracyMultiplier": 0.85,
+        "moveCostMultiplier": 1.5
+      },
+      {
+        "id": "empty",
+        "name": "Empty",
+        "aboveFraction": -1,
+        "statMultiplier": 0.7,
+        "accuracyMultiplier": 0.85,
+        "moveCostMultiplier": 1.5,
+        "canBattle": false
+      }
+    ],
+    "$floorNote": "Exhausted is the FLOOR -- penalties stop deepening there, and Empty is no worse except that the mon cannot battle at all. Without this, low energy lowering stats and accuracy while raising cost is a positive feedback loop into losing.",
+    "restoration": {
+      "status": "proposed",
+      "fullRestAtBase": true,
+      "itemsRestorePartial": true,
+      "benchRegenPerBattle": 5,
+      "$benchNote": "A mon not in the active slot recovers a little each battle. This makes ROTATION the core management verb rather than item-spam."
+    }
   },
   "affection": {
     "status": "unspecified",
@@ -1561,7 +1610,34 @@ const mechanicsData = {
     "min": null,
     "max": null,
     "statEffect": null,
-    "maxLevelEffects": []
+    "maxLevelEffects": [],
+    "$note": "Persistence was never in doubt; the open question is competitive play, and it is still open."
+  },
+  "proxy": {
+    "status": "specified",
+    "$comment": "A proxy is anything that takes a mon's place: Jack-In-The-Box, a decoy, a summon, a substitute. The rule is deliberately absolute.",
+    "blocksAllAttacks": true,
+    "$blocksNote": "ALL attacks hit the proxy, with no exceptions. Voice does not reach past it; neither does Trap, Ranged or anything else. The only counterplay to a proxy is not attacking.",
+    "durations": [
+      "turns",
+      "untilDestroyed"
+    ],
+    "hasOwnHP": true,
+    "openRules": [
+      "Do non-damaging effects (status, stat drops, hazards) pass through to the mon behind it, or are those blocked too? 'Blocks all attacks' does not settle this.",
+      "When a hit breaks the proxy, does the excess damage carry through to the mon, or is it absorbed? Absorbed is the safer default.",
+      "Can a second proxy be summoned while one is standing? If yes, an untilDestroyed proxy is an unbounded stall engine.",
+      "Can a proxy be healed, and does it benefit from the summoner's abilities?"
+    ]
+  },
+  "stamina": {
+    "status": "shape-only",
+    "$comment": "Per-move uses. Persists between battles, like energy. Distinct axis: stamina limits WHICH move, energy limits HOW LONG the mon can fight at all.",
+    "persistsBetweenBattles": true,
+    "perMove": true,
+    "maxUses": null,
+    "$maxUsesNote": "Per-move data. Moves do not exist yet, so there is nothing to put here.",
+    "restoration": "Same channels as energy: rest at base, items, and bench recovery."
   }
 };
 
@@ -1932,6 +2008,107 @@ function hitsToKO(hp, dmg) {
   return dmg <= 0 ? Infinity : Math.ceil(hp / dmg);
 }
 
+/**
+ * MONS energy.
+ *
+ * *** PROPOSED. The design states that energy exists, persists between
+ * battles, and degrades stats / accuracy / move cost as it falls. The tiers and
+ * numbers here are a first cut. ***
+ *
+ * Energy persisting between battles is the decision that shapes this: the unit
+ * of play stops being a battle and becomes a run of them. The question during a
+ * fight is no longer "can I win this" but "can I win this cheaply enough to
+ * still win the next five".
+ *
+ * Two consequences the model is built around:
+ *
+ *   1. THE FLOOR IS MANDATORY. Falling energy lowering stats *and* accuracy
+ *      *and* raising move cost is a positive feedback loop into losing. With
+ *      persistence it is worse -- a bad fight taxes the rest of the run. So
+ *      penalties stop deepening at Exhausted; Empty is no worse, it just cannot
+ *      fight.
+ *   2. ROTATION IS THE VERB. Benched mons recover a little per battle, so the
+ *      intended answer to a tiring team is to rotate it rather than to spend
+ *      items.
+ */
+
+
+const ENERGY = mechanicsData.energy;
+
+const MAX_ENERGY = ENERGY.max;
+const TIERS = ENERGY.tiers;
+
+/** The tier a mon is in, from its current energy. */
+function tierFor(current, max = MAX_ENERGY) {
+  if (typeof current !== 'number' || Number.isNaN(current)) {
+    throw new SpecError(`energy must be a number, got ${current}`);
+  }
+  if (max <= 0) throw new SpecError(`max energy must be positive, got ${max}`);
+  if (current <= 0) return TIERS.find((t) => t.id === 'empty');
+
+  const fraction = Math.min(current, max) / max;
+  // tiers are ordered high to low; the first whose floor we clear is ours
+  return TIERS.find((t) => t.aboveFraction >= 0 && fraction > t.aboveFraction)
+      ?? TIERS.find((t) => t.id === 'exhausted');
+}
+
+/** Can this mon take the field at all? */
+const canBattle = (current, max = MAX_ENERGY) => tierFor(current, max).canBattle !== false;
+
+/**
+ * Every stat scaled by the energy tier. HP is left alone -- energy should make
+ * a mon fight worse, not shrink its health bar mid-run.
+ */
+function applyEnergy(stats, current, max = MAX_ENERGY) {
+  const m = tierFor(current, max).statMultiplier;
+  return {
+    hp: stats.hp,
+    atk: Math.max(1, Math.floor(stats.atk * m)),
+    def: Math.max(1, Math.floor(stats.def * m)),
+    spa: Math.max(1, Math.floor(stats.spa * m)),
+    spd: Math.max(1, Math.floor(stats.spd * m)),
+    spe: Math.max(1, Math.floor(stats.spe * m)),
+  };
+}
+
+/** Accuracy multiplier at the current energy. */
+const accuracyAt = (current, max = MAX_ENERGY) => tierFor(current, max).accuracyMultiplier;
+
+/** What one move actually costs at the current energy. */
+function moveCost(baseCost, current, max = MAX_ENERGY) {
+  if (baseCost < 0) throw new SpecError(`move cost cannot be negative, got ${baseCost}`);
+  return Math.ceil(baseCost * tierFor(current, max).moveCostMultiplier);
+}
+
+/**
+ * Energy after one turn: the per-turn drain plus the cost of the move used.
+ * Never below zero.
+ */
+function spendTurn(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY) {
+  const spent = ENERGY.drainPerTurn + moveCost(baseCost, current, max);
+  return Math.max(0, current - spent);
+}
+
+/** Energy a benched mon gets back after a battle it sat out. */
+function benchRecover(current, max = MAX_ENERGY) {
+  return Math.min(max, current + ENERGY.restoration.benchRegenPerBattle);
+}
+
+/**
+ * How many turns a mon can keep fighting from its current energy, using a
+ * move of the given base cost every turn. This is the number that decides
+ * whether a team can finish a run.
+ */
+function turnsRemaining(current, baseCost = ENERGY.defaultMoveCost, max = MAX_ENERGY) {
+  let e = current;
+  let turns = 0;
+  while (e > 0 && turns < 1000) {
+    e = spendTurn(e, baseCost, max);
+    turns += 1;
+  }
+  return turns;
+}
+
 (function () {
   "use strict";
 
@@ -2013,8 +2190,14 @@ function hitsToKO(hp, dmg) {
 
     var A = monById(Number($('atk').value));
     var D = monById(Number($('def').value));
-    var as = statsAt(A.engine.stats, level);
+    var energy = Number($('en').value);
+    var tier = tierFor(energy);
+    var asFresh = statsAt(A.engine.stats, level);
+    var as = applyEnergy(asFresh, energy);
     var ds = statsAt(D.engine.stats, level);
+
+    $('env').textContent = energy;
+    $('entier').textContent = tier.name;
 
     var modifier = (state.kindle ? 1.5 : 1) * (state.slow ? 1.2 : 1);
 
@@ -2041,14 +2224,17 @@ function hitsToKO(hp, dmg) {
         ' &mdash; <b>' + Math.round(exp) + '</b> expected once the roll is counted.';
 
     var hits = hitsToKO(ds.hp, e.damage);
-    $('kos').innerHTML = e.damage === 0
-      ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
-      : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +
-        '</b> to KO ' + D.engine.name + ', at ' + ds.hp + ' HP.';
+    $('kos').innerHTML = tier.canBattle === false
+      ? '<b>' + A.engine.name + ' is Empty</b> and cannot take the field. This is what the hit would do if it could.'
+      : e.damage === 0
+        ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
+        : '<b>' + (hits === Infinity ? '∞' : hits) + ' hit' + (hits === 1 ? '' : 's') +
+          '</b> to KO ' + D.engine.name + ', at ' + ds.hp + ' HP.';
 
     // multiplier chain
     var lines = [
-      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def, '', fmt(e.raw), false],
+      ['Raw &mdash; power ' + power + ', ' + (special ? 'SpA ' + args.atk + ' vs SpD ' : 'ATK ' + args.atk + ' vs DEF ') + args.def +
+        (tier.statMultiplier < 1 ? ' &nbsp;(' + tier.name + ': stats ×' + tier.statMultiplier + ')' : ''), '', fmt(e.raw), false],
       ['STAB &mdash; ' + (e.stab === 1 ? 'not its type' : (typesOf(A).length === 1 ? 'mono-type' : 'dual-type')), '×' + e.stab, fmt(e.raw * e.stab), e.stab === 1],
       ['Type &mdash; ' + $('mt').value + ' vs ' + typesOf(D).join('/'), '×' + e.effectiveness, fmt(e.raw * e.stab * e.effectiveness), e.effectiveness === 1],
       ['Abilities' + (modifier === 1 ? ' &mdash; none active' : ''), '×' + fmt(modifier), fmt(e.raw * e.stab * e.effectiveness * modifier), modifier === 1],
@@ -2104,7 +2290,7 @@ function hitsToKO(hp, dmg) {
 
   // ---- wiring ------------------------------------------------------------
 
-  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale'].forEach(function (id) {
+  ['atk', 'def', 'mt', 'pw', 'lv', 'cls', 'scale', 'en'].forEach(function (id) {
     $(id).addEventListener('input', render);
   });
 

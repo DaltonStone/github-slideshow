@@ -36,6 +36,7 @@ const engine = [
   flatten('data.generated.js'),
   flatten('rules.js'),
   flatten('damage.js'),
+  flatten('energy.js'),
 ].join('\n\n');
 
 const template = readFileSync(join(game, 'page.html'), 'utf8');

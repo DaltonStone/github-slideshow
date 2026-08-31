@@ -167,12 +167,29 @@ test('the weight-ratio cap keeps size-based damage bounded', () => {
 // Systems that are declared but not designed
 // ---------------------------------------------------------------------------
 
-test('energy and affection declare that they are unspecified, and say what blocks them', () => {
-  for (const key of ['energy', 'affection']) {
-    const sys = M.mechanicsData[key];
-    assert.equal(sys.status, 'unspecified', `${key} claims to be specified`);
-    assert.ok(sys.blockedOn && sys.blockedOn.length > 20,
-      `${key} is unspecified but does not say what it is waiting on`);
+test('affection is still unspecified, and says what blocks it', () => {
+  const a = M.mechanicsData.affection;
+  assert.equal(a.status, 'unspecified');
+  assert.ok(a.blockedOn && a.blockedOn.length > 20,
+    'affection is unspecified but does not say what it is waiting on');
+});
+
+test('energy is proposed rather than specified, and carries its floor', () => {
+  // "proposed" means the shape is decided and the numbers are a first cut --
+  // the same status the damage formula has.
+  const e = M.mechanicsData.energy;
+  assert.equal(e.status, 'proposed');
+  assert.ok(e.$floorNote && e.$floorNote.includes('FLOOR'),
+    'the floor is the load-bearing part of the model and must be documented');
+  assert.equal(e.persistsBetweenBattles, true);
+});
+
+test('every system declares a status, so nothing is silently half-built', () => {
+  const systems = Object.entries(M.mechanicsData)
+    .filter(([k, v]) => !k.startsWith('$') && typeof v === 'object' && v !== null);
+  const valid = ['specified', 'proposed', 'shape-only', 'unspecified'];
+  for (const [key, sys] of systems) {
+    assert.ok(valid.includes(sys.status), `${key} has status ${sys.status}`);
   }
 });
 

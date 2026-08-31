@@ -10,9 +10,10 @@ design/
   OPEN_QUESTIONS.md    what is unsettled, and the balance analysis behind it
   data/                machine-readable source -- types, abilities, mons
   lib/rules.js         the spec as code: types, stacking, STAB, stat curves
-  lib/damage.js        the damage formula -- PROPOSED, not in the spec
+  lib/damage.js        the damage formula and crit -- PROPOSED
+  lib/energy.js        the energy model -- PROPOSED; persists between battles
   lib/data.generated.js  generated from data/; do not edit
-  test/                129 tests over the rules, data, formula and mechanics
+  test/                152 tests over the rules, data, formula and mechanics
   tools/               build steps, balance analysis, dev server
 ../game/               the playable page -- see game/README.md
 ```
@@ -23,7 +24,7 @@ Node 18+, no dependencies.
 
 ```sh
 cd design
-npm test         # 129 tests
+npm test         # 152 tests
 npm run analyze  # type-chart balance and growth analysis
 npm run build    # regenerate lib/data.generated.js and game/index.html
 npm run serve    # http://localhost:8080/game/
