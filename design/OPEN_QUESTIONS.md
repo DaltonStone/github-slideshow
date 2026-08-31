@@ -52,13 +52,26 @@ guides rather than rules. If evasion is not a strong mechanic, Phantom is a
 trap type. Options: give Phantom a resistance (Earth reads well — nothing to
 stand on), or accept it as a glass-cannon type and rewrite the §7 default.
 
-### 1.3 Dark and Light have one weakness each
+### 1.3 Dark is now the second-best type in the game
 
-Every other type has two or three. Dark is additionally the second-best
-attacker and appears in three of the fifteen 3.0× pairings. Nothing is broken
-here, but Dark/Light are the two types most likely to over-select on a
-competitive roster, and they are the two cheapest places to add a weakness if
-one is needed.
+Making Dark↔Light mutual gave Light the second weakness it needed (Psychic and
+Dark), but it moved Dark from an even attacker to a dominant one:
+
+| | Offence | Defence | Notes |
+|---|---|---|---|
+| Dragon | +3 | +2 | 4 super-effective, resisted only by Steel |
+| **Dark** | **+2** | **+2** | 4 super-effective, only *one* weakness, and 6 of the game's 18 3.0× pairings |
+| Light | −1 | **−1** | 2 weaknesses, 1 resistance — now tied with Phantom as the softest type |
+
+The problem is that Dark's designated answer is Light, and Light now loses the
+exchange: mutual 2× makes it a race, and Dark is +2/+2 while Light is −1/−1 with
+a role described as "one note, not much variety or power".
+
+**Suggested fix, which the role already implies: denial acts first.** Give Light
+priority on its denial moves specifically. Countering something reactively is
+what denial *is*, and it turns the mutual 2× into a genuine race — Light's edge
+is tempo, Dark's is raw power — instead of a race Dark simply wins. It costs
+nothing on the chart.
 
 ### 1.5 The starter triangle is broken at final stage — needs a decision
 

@@ -90,12 +90,29 @@ test('the elemental cycle is a clean one-way trade', () => {
   }
 });
 
-test('the spirit cycle is a clean one-way trade', () => {
-  const cycle = [['Psychic', 'Light'], ['Light', 'Dark'], ['Dark', 'Psychic']];
-  for (const [strong, weak] of cycle) {
+test('the spirit ring is a cycle with one mutual pair', () => {
+  // Psychic -> Light and Dark -> Psychic are one-way trades like the elements.
+  for (const [strong, weak] of [['Psychic', 'Light'], ['Dark', 'Psychic']]) {
     assert.equal(M.chartValue(strong, weak), 2, `${strong} -> ${weak}`);
     assert.equal(M.chartValue(weak, strong), 0.5, `${weak} -> ${strong}`);
   }
+  // Dark and Light are the deliberate exception: rule-breaker and denial hit
+  // each other for 2x, so neither can switch in safely and the exchange is a
+  // race rather than a counter.
+  assert.equal(M.chartValue('Light', 'Dark'), 2);
+  assert.equal(M.chartValue('Dark', 'Light'), 2);
+});
+
+test('Dark and Light are the only mutually super-effective pair', () => {
+  // If a second mutual pair appears it should be a decision, not a slip.
+  const mutual = [];
+  for (const a of M.TYPES) {
+    for (const b of M.TYPES) {
+      if (a >= b) continue;
+      if (M.chartValue(a, b) === 2 && M.chartValue(b, a) === 2) mutual.push(`${a}/${b}`);
+    }
+  }
+  assert.deepEqual(mutual, ['Dark/Light']);
 });
 
 test('Normal has no super-effective matchup anywhere', () => {

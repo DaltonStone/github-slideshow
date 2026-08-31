@@ -25,7 +25,7 @@
     "Earth":   { "Water": 2, "Steel": 2, "Earth": 0.5, "Fire": 0.5, "Dragon": 0.5 },
     "Steel":   { "Normal": 2, "Fire": 0.5, "Water": 0.5, "Earth": 0.5, "Steel": 0.5, "Dragon": 0.5 },
     "Psychic": { "Light": 2, "Dragon": 2, "Psychic": 0.5, "Dark": 0.5, "Steel": 0.5, "Normal": 0 },
-    "Dark":    { "Psychic": 2, "Normal": 2, "Phantom": 2, "Dark": 0.5, "Light": 0.5, "Steel": 0.5 },
+    "Dark":    { "Psychic": 2, "Normal": 2, "Phantom": 2, "Light": 2, "Dark": 0.5, "Steel": 0.5 },
     "Light":   { "Dark": 2, "Phantom": 2, "Light": 0.5, "Psychic": 0.5, "Steel": 0.5 },
     "Dragon":  { "Fire": 2, "Water": 2, "Earth": 2, "Dragon": 2, "Steel": 0.5 },
     "Phantom": { "Psychic": 2, "Phantom": 2, "Dark": 0.5, "Normal": 0 }

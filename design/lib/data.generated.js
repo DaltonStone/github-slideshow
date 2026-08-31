@@ -81,8 +81,8 @@ export const typeData = {
       "Psychic": 2,
       "Normal": 2,
       "Phantom": 2,
+      "Light": 2,
       "Dark": 0.5,
-      "Light": 0.5,
       "Steel": 0.5
     },
     "Light": {

@@ -51,7 +51,7 @@ Attacker → defender. `2` = effective (+100%), `0.5` = ineffective (−50%),
 | **Earth**   | – | 0.5 | **2** | 0.5 | **2** | – | – | – | 0.5 | – |
 | **Steel**   | **2** | 0.5 | 0.5 | 0.5 | 0.5 | – | – | – | 0.5 | – |
 | **Psychic** | **0** | – | – | – | 0.5 | 0.5 | 0.5 | **2** | **2** | – |
-| **Dark**    | **2** | – | – | – | 0.5 | **2** | 0.5 | 0.5 | – | **2** |
+| **Dark**    | **2** | – | – | – | 0.5 | **2** | 0.5 | **2** | – | **2** |
 | **Light**   | – | – | – | – | 0.5 | 0.5 | **2** | 0.5 | – | **2** |
 | **Dragon**  | – | **2** | **2** | **2** | 0.5 | – | – | – | **2** | – |
 | **Phantom** | **0** | – | – | – | – | **2** | 0.5 | – | – | **2** |
@@ -60,8 +60,11 @@ Attacker → defender. `2` = effective (+100%), `0.5` = ineffective (−50%),
 
 - **Elemental cycle:** Water → Fire → Earth → Water. Each beats the next for 2×
   and is resisted by it for 0.5×, so every pair is a clean one-way trade.
-- **Spirit cycle:** Psychic → Light → Dark → Psychic, resisting in the same
-  mirrored way.
+- **Spirit ring:** Psychic → Light and Dark → Psychic are one-way trades like
+  the elements, but **Dark and Light hit each other for 2×**. Rule-breaker and
+  denial are each other's answer, so neither switches in safely and the exchange
+  is a race rather than a counter. This is the only mutually super-effective
+  pair in the chart, and a test keeps it that way.
 - **Steel** is the defensive anchor: it resists six types and is neutral to a
   seventh, but is soft to all three elements and has almost no offense of its
   own (2× on Normal only).
