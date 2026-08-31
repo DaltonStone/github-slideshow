@@ -6,7 +6,7 @@
   "description": "MONS design spec, data and rules engine.",
   "scripts": {
     "build": "node tools/build-data.js && node tools/build-page.js",
-    "test": "node --test test/rules.test.js test/data.test.js test/damage.test.js",
+    "test": "node --test 'test/*.test.js'",
     "analyze": "node tools/analyze.js",
     "serve": "node tools/serve.js",
     "build:data": "node tools/build-data.js",

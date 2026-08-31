@@ -12,7 +12,7 @@ design/
   lib/rules.js         the spec as code: types, stacking, STAB, stat curves
   lib/damage.js        the damage formula -- PROPOSED, not in the spec
   lib/data.generated.js  generated from data/; do not edit
-  test/                101 tests over the rules, the data and the formula
+  test/                129 tests over the rules, data, formula and mechanics
   tools/               build steps, balance analysis, dev server
 ../game/               the playable page -- see game/README.md
 ```
@@ -23,7 +23,7 @@ Node 18+, no dependencies.
 
 ```sh
 cd design
-npm test         # 101 tests
+npm test         # 129 tests
 npm run analyze  # type-chart balance and growth analysis
 npm run build    # regenerate lib/data.generated.js and game/index.html
 npm run serve    # http://localhost:8080/game/
