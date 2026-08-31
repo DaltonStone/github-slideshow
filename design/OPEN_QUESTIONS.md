@@ -110,6 +110,87 @@ deletion.
 
 ---
 
+### 1.5 The starter triangle is broken at final stage — needs a decision
+
+*(This section was accidentally deleted while §1.3 was being rewritten and has
+been restored with numbers re-run against the current chart.)*
+
+The starters gain a second type when they evolve:
+
+| Line | Basic | Evolved | Final |
+|---|---|---|---|
+| Fire  | Emberkit | Cindermaw | Pyrelash **Fire/Phantom** |
+| Water | Rillet | Tidecalf | Brinemoor **Water/Psychic** |
+| Earth | Loambit | Cragmole | Terrabulk **Earth/Steel** |
+
+At basic and evolved stage this is the clean Water → Fire → Earth → Water cycle.
+At final stage it is not. Simulated at L50 with a 60-power STAB move, each using
+its own better offensive stat:
+
+| Matchup | Hits to KO | Winner | Cycle wants |
+|---|---|---|---|
+| Pyrelash vs Brinemoor | 2 vs 2 | **Pyrelash** — tied, and twice as fast (116 vs 57) | Brinemoor |
+| Brinemoor vs Terrabulk | 2 vs 2 | **Brinemoor** — tied, marginally faster (57 vs 52) | Terrabulk |
+| Terrabulk vs Pyrelash | 5 vs 2 | Pyrelash ✓ | Pyrelash |
+
+**Two of three legs are wrong, and both are decided by a speed tiebreak rather
+than by type** — which is exactly what the cycle is supposed to prevent.
+
+Three causes, and one of them is new:
+
+1. **Phantom hits Psychic for 2×.** The Fire starter's second type counters the
+   Water starter's second type, cancelling the Water-beats-Fire leg.
+2. **Earth/Steel is the only dual typing in the game Fire reaches 3.0× on** —
+   Fire is 2× into both halves. Fire/Phantom meanwhile resists both of
+   Terrabulk's types, so it answers at 0.5×. A 6× swing between two starters.
+3. **`Psychic → Steel` (§1.3) broke the Earth-beats-Water leg.** Brinemoor is
+   Water/**Psychic** and Terrabulk is Earth/**Steel**, so the edit handed the
+   Water starter a 2× answer it did not have before — it went from losing that
+   matchup 3 hits to 2, to tying it and winning on speed. This was not
+   anticipated when the change was made.
+
+#### The fix is the same one, and it now fixes more
+
+**Water/Psychic → Water/Light** repairs *both* broken legs at once. Phantom is
+neutral into Light, and Light has no answer to Steel, so cause 1 and cause 3 both
+disappear:
+
+| Matchup | Hits to KO | Winner |
+|---|---|---|
+| Pyrelash vs Brinemoor | 3 vs 2 | Brinemoor ✓ |
+| Brinemoor vs Terrabulk | 3 vs 2 | Terrabulk ✓ |
+| Terrabulk vs Pyrelash | 5 vs 2 | Pyrelash ✓ |
+
+A clean cycle, decided by type rather than by speed. Light also suits Brinemoor
+better than Psychic does — §7 gives Light "max SpD, healer/support", and
+Brinemoor already runs Tidewater and Steady, while Psychic's default is "fast
+special, frail", which is the opposite of what it is built as.
+
+#### Cause 2 survives the fix
+
+Fire still beats Earth at 3.0× while the other legs are 2.0×, and Terrabulk still
+answers at 0.5×. Two mitigations the design already half-contains:
+
+- **Bedrock** ("cannot be KO'd from full HP in one hit") is exactly the insurance
+  a 3× weakness needs and is already in Terrabulk's pool. Making it the default
+  turns the matchup from *deleted* into *very bad*.
+- **Terrabulk's offence is a movepool problem.** A Water-type coverage move
+  reaches Fire/Phantom for 2×. Move pools are unwritten, so this is free to fix.
+
+#### Other options considered
+
+| Option | Effect |
+|---|---|
+| Fire/Phantom → **Fire/Light** | Also restores the cycle, but loses the ghost-fire concept. |
+| Earth/Steel → **Earth/Dragon** | All three legs a symmetric 2×, but Dragon is meant to be rare and Steel fits the "smelted, not gathered" flavour. |
+| Accept a power ranking | Defensible, but a 6× swing plus two speed-decided legs is a lot to hand the player at character select. |
+
+**Recommendation: Water/Light, plus Bedrock as Terrabulk's default.** One field
+in `data/mons.json`, and reversible.
+
+This analysis depends on the physical/special split, which the spec still never
+states (§2).
+
 ## 2. The damage formula — PROPOSED, needs your call
 
 v0.1 fixed every multiplier and ruled level *out* of the formula, but never
@@ -182,13 +263,94 @@ undefined condition cannot be balanced or implemented.
   the multiplier order, which does not exist yet.
 - `Grounded` implies Earth hazards; hazards are otherwise undefined.
 
-## 6. Naming
+## 6. The new systems
+
+### 6.1 Energy — blocked on one question
+
+Energy is a pool separate from stamina: it falls over time, and as it falls it
+degrades stats and accuracy and raises move cost. The shape is in
+[`data/mechanics.json`](data/mechanics.json) with `status: "unspecified"`, and no
+numbers are invented, because they all follow from one unanswered question:
+
+> **Does energy persist between battles, or reset each battle?**
+
+- **Resets each battle** — a pacing mechanic. It makes long fights different
+  from short ones and rewards closing quickly. Self-contained and easy to tune.
+- **Persists** — a resource-management mechanic. Now the player is managing a
+  team across a day, deciding which mon to spend. Much richer, much bigger:
+  it needs restoration items, rest, and an overworld loop to matter.
+
+These are different games. Every number below depends on which one it is.
+
+**Two design hazards worth building around either way:**
+
+1. **The death spiral.** Low energy lowering stats *and* accuracy *and* raising
+   move cost is a positive feedback loop into losing. The player who falls
+   behind falls further behind through no further decision of their own. A
+   **floor** is required — below some threshold, the penalties stop deepening.
+   `mechanics.json` reserves a `floor` field for exactly this.
+2. **Two depleting resources is a lot.** Stamina (per-move uses) and energy
+   (global pool) both count down, and the player tracks both every turn. That
+   can be the game's identity — battles as attrition — but it is bookkeeping,
+   and it is worth being sure the second resource earns its place rather than
+   duplicating the first. If stamina limits *which move*, and energy limits
+   *how long you can fight at all*, they are genuinely different axes. If both
+   just mean "you run out", merge them.
+
+### 6.2 Affection — blocked on whether it is competitive
+
+Affection modifies stats by affection points and level, with extra effects at
+maximum. Per-instance state, not species data.
+
+> **Does affection apply in competitive play?**
+
+If it does, it is a **stat bonus you get by grinding**, and any competitive
+format built on it is decided partly by time spent rather than decisions made.
+The standard answer in the genre is that affection applies in casual and
+single-player, and is normalised out of ranked. Worth deciding now, because it
+also settles whether affection effects can be strong (casual-only) or must stay
+cosmetic-adjacent (universal).
+
+The "additional effects at maximum" are the interesting part and the risky part:
+effects like surviving a lethal hit or shrugging off status are exactly what a
+competitive format cannot tolerate but a story mode loves.
+
+### 6.3 What the new systems fix, and what they open
+
+**Fixed.** `Thorns` finally has a definition of contact to key off, and it comes
+from the move's delivery class rather than a separate flag, so the two cannot
+drift apart.
+
+**Opened.**
+
+- **Voice vs. summoned objects.** `Voice` is non-contact and "reaches things a
+  projectile would not". That is the natural counterplay to Jaxs' Jack-In-The-Box
+  and to shields generally — a Voice move hits the mon behind the box. If that
+  is intended, it should be a stated rule, because it changes how the box's
+  mind-game plays out.
+- **Crit chance now interacts with the modifier stack.** Crit is no longer a
+  toggle but a real probability, and moves and abilities push it. `Lucky Day`
+  ("on turns divisible by 7, always crit") is now a guaranteed top-end roll that
+  stacks with Kindling and a 3.0× type hit: 1.5 × 1.25 × 3.0 × 1.5 = **8.4×**
+  before the formula runs. §2's cap question gets sharper, not softer.
+- **The crit damage multiplier is still a placeholder.** The design specifies
+  the chance curve and says moves modify "crit damage", but never says what crit
+  damage *is*. It sits at 1.5.
+- **Crit stops at L60 but levels run to 99.** Deliberate, per the design — worth
+  confirming that the last 39 levels buying no crit is intended rather than an
+  artefact of picking 60.
+- **Stamina is named but undefined.** Energy is "separate from stamina", which
+  means stamina now needs a definition too.
+- **Which moves read height and weight?** The cap is proposed at 4×; the moves
+  that use it do not exist yet.
+
+## 7. Naming
 
 Every mon name in the data is a working title. `Emberkit`, `Cindermaw`,
 `Pyrelash`, `Rillet`, `Tidecalf`, `Brinemoor`, `Loambit`, `Cragmole`,
 `Terrabulk`. The game's own title is also still `MONS`.
 
-## 7. Smaller decisions taken as provisional defaults
+## 8. Smaller decisions taken as provisional defaults
 
 Recorded here so they are visible rather than buried in the data:
 
@@ -201,7 +363,7 @@ Recorded here so they are visible rather than buried in the data:
 | `relatedMons` | empty | There are only nine mons; predator/prey needs a real roster. |
 | Ability pool inheritance | an evolution keeps its previous stage's whole pool and adds to it | Not stated in the spec, but the 3→4→5 pool sizes strongly imply it. **Confirm this is intended** — it is enforced by a test, so it is cheap to reverse now and expensive later. |
 
-## 8. Questions for the next pass
+## 9. Questions for the next pass
 
 1. Is Dragon's rarity a written rule, or does Dragon need a second weakness?
 2. What is the damage formula?

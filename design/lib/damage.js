@@ -46,7 +46,9 @@
  * avoid. `explain()` below reports the stack so it stays visible.
  */
 
-import { effectiveness, stab, SpecError } from './rules.js';
+import { effectiveness, stab, mechanicsData, SpecError, MIN_LEVEL, MAX_LEVEL } from './rules.js';
+
+const CRIT = mechanicsData.crit;
 
 /** Tunable constants. Change these, not the shape of the formula. */
 export const TUNING = {
@@ -54,9 +56,38 @@ export const TUNING = {
   SCALE: 100,
   /** Damage is never less than this, so nothing is perfectly safe. */
   MIN_DAMAGE: 1,
-  /** Crit multiplier. Not specified anywhere; placeholder. */
-  CRIT: 1.5,
+  /** Crit damage multiplier. PROVISIONAL -- the design gives crit *chance*, not damage. */
+  CRIT: CRIT.damageMultiplier,
 };
+
+/**
+ * Chance of a critical hit at a level, before any move or ability modifier.
+ *
+ * Rises linearly from baseChance at L1 to maxChance at capLevel, then stays
+ * flat -- levels run to 99 but crit stops climbing at 60.
+ *
+ * @param {number} level
+ * @param {number} [bonus=0] flat addition from moves or abilities, e.g. 0.1
+ * @returns {number} a probability in 0..1
+ */
+export function critChance(level, bonus = 0) {
+  if (!Number.isInteger(level) || level < MIN_LEVEL || level > MAX_LEVEL) {
+    throw new SpecError(`level must be an integer in ${MIN_LEVEL}..${MAX_LEVEL}, got ${level}`);
+  }
+  const capped = Math.min(level, CRIT.capLevel);
+  const t = (capped - MIN_LEVEL) / (CRIT.capLevel - MIN_LEVEL);
+  const chance = CRIT.baseChance + (CRIT.maxChance - CRIT.baseChance) * t;
+  return Math.min(1, Math.max(0, chance + bonus));
+}
+
+/**
+ * Damage averaged over the crit roll -- what a hit is actually worth before
+ * you know the outcome. Use this for comparisons; `damage` is one instance.
+ */
+export function expectedDamage(o, level, critBonus = 0) {
+  const p = critChance(level, critBonus);
+  return damage({ ...o, crit: false }) * (1 - p) + damage({ ...o, crit: true }) * p;
+}
 
 /**
  * The stat-vs-stat core, before any multiplier.

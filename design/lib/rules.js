@@ -8,7 +8,7 @@
  * piece the spec does not state and is therefore provisional.
  */
 
-import { typeData, abilityData, monData } from './data.generated.js';
+import { typeData, abilityData, monData, mechanicsData } from './data.generated.js';
 
 export const TYPES = typeData.types;
 export const CHART = typeData.chart;
@@ -188,4 +188,21 @@ export function evolutionLine(idOrName) {
   return line;
 }
 
-export { typeData, abilityData, monData };
+/** Move delivery classes (SPEC.md section 9.1). Exactly one per move. */
+export const DELIVERY = mechanicsData.moveDelivery.classes;
+
+/** Look up a delivery class by id. */
+export const deliveryById = (id) => DELIVERY.find((d) => d.id === id);
+
+/**
+ * Whether a move makes contact, from its delivery class. This is what Thorns
+ * and any other contact-keyed ability reads -- contact is never declared
+ * separately, so the two cannot disagree.
+ */
+export function makesContact(deliveryId) {
+  const d = deliveryById(deliveryId);
+  if (!d) throw new SpecError(`unknown move delivery class: ${deliveryId}`);
+  return d.contact;
+}
+
+export { typeData, abilityData, monData, mechanicsData };

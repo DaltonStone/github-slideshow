@@ -489,3 +489,29 @@ test('lib/data.generated.js is in sync with data/*.json', () => {
       `data/${file} has changed since the last build -- run: npm run build`);
   }
 });
+
+test('the design docs have no duplicate or skipped section numbers', () => {
+  // Both documents cross-reference each other by section number, so a
+  // duplicated heading silently breaks a link that still looks fine.
+  for (const file of ['SPEC.md', 'OPEN_QUESTIONS.md']) {
+    const text = readFileSync(join(here, '..', file), 'utf8');
+    const nums = [...text.matchAll(/^## (\d+)\./gm)].map((m) => Number(m[1]));
+    assert.deepEqual(nums, [...new Set(nums)], `${file} has a duplicate section number`);
+    assert.deepEqual(nums, [...nums].sort((a, b) => a - b), `${file} sections are out of order`);
+    nums.forEach((n, i) => assert.equal(n, i + 1, `${file} jumps at section ${n}`));
+  }
+});
+
+test('every section cross-reference points at a section that exists', () => {
+  const docs = {};
+  for (const file of ['SPEC.md', 'OPEN_QUESTIONS.md']) {
+    docs[file] = readFileSync(join(here, '..', file), 'utf8');
+  }
+  for (const [file, text] of Object.entries(docs)) {
+    for (const m of text.matchAll(/OPEN_QUESTIONS\.md[^§]{0,40}§(\d+)(?:\.(\d+))?/g)) {
+      const head = m[2] ? `### ${m[1]}.${m[2]} ` : `## ${m[1]}. `;
+      assert.ok(docs['OPEN_QUESTIONS.md'].includes(head),
+        `${file} references OPEN_QUESTIONS §${m[1]}${m[2] ? '.' + m[2] : ''} which does not exist`);
+    }
+  }
+});

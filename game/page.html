@@ -462,6 +462,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         <div class="hero-label">Damage</div>
         <div class="hero-num" id="dmg">0</div>
         <div class="hero-sub" id="kos"></div>
+        <div class="hero-sub" id="critline"></div>
       </div>
 
       <div>
@@ -487,6 +488,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
       <div class="field">
         <label class="cap" for="scale">SCALE &mdash; <span id="scalev">100</span> &nbsp;(lower = faster battles)</label>
         <input id="scale" type="range" min="40" max="220" step="5" value="100">
+        <p class="panel-note" style="margin-top:8px">Crit chance runs 5% at L1 to 15% at L60, then stays flat. Crit damage is &times;1.5 and is still a placeholder &mdash; the design gives the chance curve, not the multiplier.</p>
       </div>
     </div>
   </section>
@@ -632,6 +634,13 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
 
     $('dmg').textContent = e.damage;
 
+    var p = critChance(level);
+    var exp = expectedDamage(args, level);
+    $('critline').innerHTML = state.crit
+      ? 'Forced crit. At L' + level + ' this lands <b>' + (p * 100).toFixed(1) + '%</b> of the time on its own.'
+      : '<b>' + (p * 100).toFixed(1) + '%</b> crit chance at L' + level +
+        ' &mdash; <b>' + Math.round(exp) + '</b> expected once the roll is counted.';
+
     var hits = hitsToKO(ds.hp, e.damage);
     $('kos').innerHTML = e.damage === 0
       ? '<b>' + D.engine.name + '</b> is immune — no damage at all.'
@@ -680,7 +689,7 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
 
   function renderRoster(level) {
     var head = '<tr><th>Mon</th><th>Stage</th><th>HP</th><th>ATK</th><th>DEF</th>' +
-      '<th>SP.ATK</th><th>SP.DEF</th><th>SPEED</th><th>Base total</th></tr>';
+      '<th>SP.ATK</th><th>SP.DEF</th><th>SPEED</th><th>Base total</th><th>Height</th><th>Weight</th></tr>';
     var body = MONS.map(function (m) {
       var s = statsAt(m.engine.stats, level);
       return '<tr><td class="name">' + m.engine.name +
@@ -688,7 +697,8 @@ table.roster td.hp, table.roster td.tot { color: var(--ink); font-weight: 600; }
         '<td>' + m.engine.stage + '</td>' +
         '<td class="hp">' + s.hp + '</td><td>' + s.atk + '</td><td>' + s.def + '</td>' +
         '<td>' + s.spa + '</td><td>' + s.spd + '</td><td>' + s.spe + '</td>' +
-        '<td class="tot">' + m.engine.total + '</td></tr>';
+        '<td class="tot">' + m.engine.total + '</td>' +
+        '<td>' + m.engine.height + ' m</td><td>' + m.engine.weight + ' kg</td></tr>';
     }).join('');
     $('roster').innerHTML = head + body;
   }

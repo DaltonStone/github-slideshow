@@ -339,6 +339,8 @@ export const monData = {
         "type2": null,
         "origin": "Natural",
         "body": "Quadruped, hand-sized. Coat of fine ash that lifts when it runs.",
+        "height": 0.3,
+        "weight": 4.5,
         "stage": "basic",
         "stats": {
           "hp": 15,
@@ -402,6 +404,8 @@ export const monData = {
         "type2": null,
         "origin": "Natural",
         "body": "Long-limbed, knee-high. Jaw vents heat when it breathes out.",
+        "height": 0.6,
+        "weight": 14,
         "stage": "evolved",
         "stats": {
           "hp": 18,
@@ -470,6 +474,8 @@ export const monData = {
         "type2": "Phantom",
         "origin": "Natural",
         "body": "Shoulder-height, whip-tailed. Leaves a standing line of heat behind a charge.",
+        "height": 1.4,
+        "weight": 52,
         "stage": "final",
         "stats": {
           "hp": 22,
@@ -535,6 +541,8 @@ export const monData = {
         "type2": null,
         "origin": "Natural",
         "body": "Otter-shaped, forearm-length. Fur sheds water so completely it is dry the moment it surfaces.",
+        "height": 0.4,
+        "weight": 6,
         "stage": "basic",
         "stats": {
           "hp": 18,
@@ -598,6 +606,8 @@ export const monData = {
         "type2": null,
         "origin": "Natural",
         "body": "Barrel-chested, knee-high. Moves on land like something that would rather not.",
+        "height": 0.7,
+        "weight": 38,
         "stage": "evolved",
         "stats": {
           "hp": 23,
@@ -666,6 +676,8 @@ export const monData = {
         "type2": "Psychic",
         "origin": "Natural",
         "body": "Bulk of a small boat. Carries a standing swell around itself in still water.",
+        "height": 2.6,
+        "weight": 340,
         "stage": "final",
         "stats": {
           "hp": 29,
@@ -731,6 +743,8 @@ export const monData = {
         "type2": null,
         "origin": "Natural",
         "body": "Squat digger, two hands' span. Plated across the shoulders and back.",
+        "height": 0.3,
+        "weight": 9,
         "stage": "basic",
         "stats": {
           "hp": 22,
@@ -794,6 +808,8 @@ export const monData = {
         "type2": null,
         "origin": "Natural",
         "body": "Thigh-high, front-heavy. Forelimbs ending in single fused blades.",
+        "height": 0.9,
+        "weight": 62,
         "stage": "evolved",
         "stats": {
           "hp": 28,
@@ -862,6 +878,8 @@ export const monData = {
         "type2": "Steel",
         "origin": "Natural",
         "body": "Shoulder-height and twice as long. Carries a course of set stone across its back.",
+        "height": 1.6,
+        "weight": 410,
         "stage": "final",
         "stats": {
           "hp": 35,
@@ -920,4 +938,94 @@ export const monData = {
       }
     }
   ]
+};
+
+export const mechanicsData = {
+  "$comment": "Systems that are not types, stats or creatures. Mirrors SPEC.md sections 4.2 (crit), 9 (move delivery) and 12 (energy, affection). Anything marked status 'unspecified' has a shape but no numbers yet, deliberately -- see OPEN_QUESTIONS.md.",
+  "version": "0.1",
+  "crit": {
+    "status": "specified",
+    "$comment": "Crit chance rises with level and then stops. Moves and abilities modify chance and damage separately.",
+    "baseChance": 0.05,
+    "maxChance": 0.15,
+    "capLevel": 60,
+    "$capNote": "Levels run to 99; chance is flat at maxChance from capLevel onward.",
+    "damageMultiplier": 1.5,
+    "$damageNote": "PROVISIONAL. Placeholder inherited from lib/damage.js; never stated in the design."
+  },
+  "moveDelivery": {
+    "status": "specified",
+    "$comment": "Every move has exactly one delivery class. The class decides contact, which is what abilities like Thorns key off.",
+    "classes": [
+      {
+        "id": "punch",
+        "name": "Punch",
+        "contact": true,
+        "note": "Struck with a limb or appendage."
+      },
+      {
+        "id": "kick",
+        "name": "Kick",
+        "contact": true,
+        "note": "Struck with the lower body."
+      },
+      {
+        "id": "body",
+        "name": "Body",
+        "contact": true,
+        "note": "The whole creature is the weapon. Height and weight feed these."
+      },
+      {
+        "id": "ranged",
+        "name": "Ranged",
+        "contact": false,
+        "note": "Projectile or emission. Usually special."
+      },
+      {
+        "id": "voice",
+        "name": "Voice",
+        "contact": false,
+        "note": "Sound. Reaches things a projectile would not."
+      },
+      {
+        "id": "trap",
+        "name": "Trap",
+        "contact": false,
+        "note": "Placed rather than aimed; resolves on a condition."
+      }
+    ]
+  },
+  "size": {
+    "status": "specified",
+    "$comment": "Flavour first, but some moves read them. Metric, per species.",
+    "heightUnit": "m",
+    "weightUnit": "kg",
+    "weightRatioCap": 4,
+    "$capNote": "PROPOSED. Ceiling on any weight-ratio term in a damage calc, so a very heavy mon against a very light one cannot produce an unbounded multiplier."
+  },
+  "energy": {
+    "status": "unspecified",
+    "$comment": "A pool separate from stamina (which is per-move uses). Falls over time; as it falls it degrades stats, accuracy, and raises move cost. Shape is recorded here so it can be filled in; the numbers are NOT invented because they depend on a decision that has not been made -- see OPEN_QUESTIONS.md section 6.1.",
+    "blockedOn": "Does energy persist between battles, or reset each battle? That decides whether this is a combat mechanic or a resource-management one, and every number below follows from it.",
+    "max": null,
+    "drainPerTurn": null,
+    "thresholds": [],
+    "$thresholdShape": {
+      "atOrBelow": "fraction of max",
+      "statMultiplier": null,
+      "accuracyMultiplier": null,
+      "moveCostMultiplier": null
+    },
+    "floor": null,
+    "$floorNote": "A floor is required. Low energy lowering stats AND accuracy AND raising cost is a positive feedback loop into losing; without a floor the loser cannot recover."
+  },
+  "affection": {
+    "status": "unspecified",
+    "$comment": "How attached a mon is to its trainer. Modifies stats by affection points and level, with extra effects at maximum. Per-instance state, not species data.",
+    "blockedOn": "Does affection apply in competitive play? A grindable stat bonus breaks any competitive format; the usual answer is that it applies in casual play and is normalised out of ranked.",
+    "min": null,
+    "max": null,
+    "statEffect": null,
+    "maxLevelEffects": []
+  }
 };

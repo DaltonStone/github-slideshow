@@ -29,6 +29,8 @@ export const typeData = ${JSON.stringify(read('types.json'), null, 2)};
 export const abilityData = ${JSON.stringify(read('abilities.json'), null, 2)};
 
 export const monData = ${JSON.stringify(read('mons.json'), null, 2)};
+
+export const mechanicsData = ${JSON.stringify(read('mechanics.json'), null, 2)};
 `;
 
 const out = join(root, 'lib', 'data.generated.js');

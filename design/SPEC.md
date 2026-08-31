@@ -148,6 +148,23 @@ subset (it should be the subset), how ties between two priority moves resolve,
 and whether anything can out-prioritise it. See
 [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §1.3.
 
+### 4.2 Critical hits
+
+Crit **chance** rises with level and then stops:
+
+| Level | 1 | 15 | 30 | 45 | **60** | 61–99 |
+|---|---|---|---|---|---|---|
+| Chance | 5.0% | 7.4% | 9.9% | 12.5% | **15.0%** | 15.0% |
+
+Linear from 5% at L1 to 15% at L60, flat thereafter. Levels run to 99, so the
+last 39 levels buy no extra crit — crit is an early- and mid-game curve.
+
+Chance and damage are **separate knobs**. A move or ability raises one or the
+other, never both implicitly; the engine keeps them apart and a test enforces it.
+The crit damage multiplier is currently 1.5 and is *provisional* — the design
+states the chance curve, not the multiplier. See
+[`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §2.
+
 ---
 
 ## 5. Stats
@@ -286,7 +303,40 @@ Target for the full game: **~50–60 shared abilities**. 28 are specified here �
 
 ---
 
-## 9. Mon template
+## 9. Moves and bodies
+
+### 9.1 Delivery classes
+
+Every move has **exactly one** delivery class, and the class alone decides
+whether the move makes contact. Contact is never declared separately, so an
+ability and a move can never disagree about it.
+
+| | Class | Contact | |
+|---|---|---|---|
+| **Contact** | Punch | yes | Struck with a limb or appendage. |
+| | Kick | yes | Struck with the lower body. |
+| | Body | yes | The whole creature is the weapon. Height and weight feed these. |
+| **Non-contact** | Ranged | no | Projectile or emission. Usually special. |
+| | Voice | no | Sound. Reaches things a projectile would not. |
+| | Trap | no | Placed rather than aimed; resolves on a condition. |
+
+`Thorns` ("a contact attacker takes 1/8 of its own max HP") reads this table and
+nothing else. `Voice` reaching what a projectile cannot is the hook for getting
+past shields, substitutes and summoned objects — see
+[`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.3.
+
+### 9.2 Height and weight
+
+Recorded per species in metres and kilograms. Flavour first, but `Body` moves
+and some others read them.
+
+Any weight-ratio term in a damage calculation is **capped at 4×**. The roster
+already spans 4.5 kg to 410 kg — a 91× spread — so an uncapped ratio would be an
+unbounded multiplier long before the roster is finished.
+
+---
+
+## 10. Mon template
 
 Every mon is authored as three tabs.
 
@@ -306,13 +356,15 @@ Up to **7 lore entries**, unlocked by catch count · `Where found` ·
 `Gender ratio or castes` (optional) · `Catch thresholds for entries` ·
 `Related mons` (prey / predator / rival / symbiont)
 
+Tab 1 also carries **Height** and **Weight** (§9.2).
+
 The JSON encoding of this template is documented in
 [`data/README.md`](data/README.md) and enforced by
 [`test/data.test.js`](test/data.test.js).
 
 ---
 
-## 10. Targets
+## 11. Targets
 
 | Item | Target | Now |
 |---|---|---|
@@ -323,7 +375,7 @@ The JSON encoding of this template is documented in
 
 ---
 
-## 11. Not yet designed
+## 12. Not yet designed
 
 - **The damage formula itself.** This spec fixes the *multipliers* (type
   effectiveness, STAB) and states that level is not a term, but never states the
@@ -337,5 +389,14 @@ The JSON encoding of this template is documented in
   confusion; none of those are defined.
 - **Catching**, party size, switching, held items, the Swarm/`Colony` body
   system, and hazards (`Grounded` implies Earth hazards exist).
+- **Energy.** A pool separate from stamina (which is per-move uses). It falls
+  over time, and as it falls it degrades stats and accuracy and raises move
+  cost. The shape is recorded in [`data/mechanics.json`](data/mechanics.json);
+  the numbers are not, because they depend on a decision that has not been made.
+  See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §6.1.
+- **Affection.** How attached a mon is to its trainer, modifying stats by
+  affection points and level with extra effects at maximum. Per-instance state,
+  not species data. See §6.2.
+- **Stamina** itself — per-move uses — is named but never defined.
 
 See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) for the decisions these block.
