@@ -337,15 +337,17 @@
         "minDamage": 5,
         "maxDamage": 15,
         "capLevel": 40,
-        "minTurns": 2,
-        "maxTurns": 5,
-        "$note": "Applied by Aspect of Flame's contact moves at 30%. Fireproof grants immunity."
+        "minTurns": 3,
+        "maxTurns": 4,
+        "$note": "Applied by Aspect of Flame's contact moves at 30%. Fireproof grants immunity.",
+        "$durationNote": "Narrowed from 2-5. At 2-5 the duration roll swung the result 2.5x at every level, which was a bigger factor than 39 levels of growth; 3-4 makes it 1.33x."
       }
     ],
     "openRules": [
       "Is the per-turn damage reduced by S.DEF, or is 'special damage' only saying it is not physical? Flat is assumed here.",
       "Does re-applying BURN refresh the duration, stack a second instance, or do nothing?",
       "Does the damage tick at end of turn, and can it knock a creature out?"
-    ]
+    ],
+    "$durationNote": "Duration ranges should stay narrow. The roll is a coin flip neither player controls, so a wide one makes the effect swingier than any decision in the fight."
   }
 }

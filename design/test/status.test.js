@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 
 import * as M from '../lib/rules.js';
 import * as S from '../lib/status.js';
-import { GLASS } from './fixtures.js';
+import { GLASS, BASIC } from './fixtures.js';
+import { damage } from '../lib/damage.js';
 
 const DOT = M.mechanicsData.damageOverTime;
 const TERRAIN = M.mechanicsData.terrain;
@@ -40,13 +41,13 @@ test('the DoT shape is general, not burn-specific', () => {
 });
 
 test('total damage is the tick times the duration', () => {
-  assert.equal(S.totalDamage('burn', 40, 2), 30);
-  assert.equal(S.totalDamage('burn', 40, 5), 75);
+  assert.equal(S.totalDamage('burn', 40, 3), 45);
+  assert.equal(S.totalDamage('burn', 40, 4), 60);
 });
 
 test('a duration outside the declared range is rejected', () => {
-  assert.throws(() => S.totalDamage('burn', 40, 1), M.SpecError);
-  assert.throws(() => S.totalDamage('burn', 40, 6), M.SpecError);
+  assert.throws(() => S.totalDamage('burn', 40, 2), M.SpecError);
+  assert.throws(() => S.totalDamage('burn', 40, 5), M.SpecError);
 });
 
 test('unknown effects and bad levels are rejected', () => {
@@ -55,21 +56,42 @@ test('unknown effects and bad levels are rejected', () => {
   assert.throws(() => S.tickDamage('burn', 100), M.SpecError);
 });
 
-test('the duration roll swings the outcome more than the level scaling does', () => {
-  // 2 turns vs 5 turns is a 2.5x difference at every level. Worth knowing:
-  // the coin flip matters more than 39 levels of growth.
+test('the duration roll no longer outweighs the level scaling', () => {
+  // At 2-5 turns the roll swung the result 2.5x at every level, against 3x
+  // across the entire level range -- a coin flip mattering more than 39 levels.
+  // Narrowed to 3-4, the roll is 1.33x and the level curve leads again.
   for (const l of [1, 20, 40, 99]) {
     const r = S.damageRange('burn', l);
-    assert.equal(r.max / r.min, 2.5, `L${l}`);
+    assert.ok(r.max / r.min < 1.5, `L${l} swings x${(r.max / r.min).toFixed(2)}`);
+  }
+  const levelGrowth = S.tickDamage('burn', 40) / S.tickDamage('burn', 1);
+  const rollSwing = S.damageRange('burn', 40).max / S.damageRange('burn', 40).min;
+  assert.ok(levelGrowth > rollSwing, 'levelling should matter more than the roll');
+});
+
+test('a full BURN is worth a couple of ordinary hits, not a kill', () => {
+  // The useful measure is not a share of HP -- at low level everything is a
+  // large share of a small bar -- but how a burn compares to just attacking.
+  // At 2-5 turns the longest burn was 109% of a frail creature's health at L1;
+  // at 3-4 it lands between one and three ordinary hits at every level.
+  for (const l of [1, 10, 20, 40, 60, 99]) {
+    const atk = M.statsAt(BASIC, l);
+    const def = M.statsAt(GLASS, l);
+    const oneHit = damage({
+      power: 60, atk: atk.atk, def: def.def,
+      moveType: 'Fire', attackerTypes: 'Fire', defenderTypes: 'Normal',
+    });
+    const worst = S.damageRange('burn', l).max / oneHit;
+    assert.ok(worst > 1, `L${l}: a whole burn is worth less than one hit (${worst.toFixed(1)}x)`);
+    assert.ok(worst < 3, `L${l}: a whole burn is worth ${worst.toFixed(1)} hits, too many for a 30% proc`);
   }
 });
 
-test('a long BURN can kill a frail creature outright at low level', () => {
-  // This is the finding, pinned so a retune has to face it: at L1 a 5-turn
-  // burn is more than a frail creature's whole health bar.
-  const hp = M.hpAt(GLASS.hp, 1);
-  assert.ok(S.damageRange('burn', 1).max > hp,
-    `a 5-turn burn is ${S.damageRange('burn', 1).max} against ${hp} HP`);
+test('BURN never takes a full health bar on its own', () => {
+  for (const l of [1, 20, 40, 99]) {
+    const share = S.damageRange('burn', l).max / M.hpAt(GLASS.hp, l);
+    assert.ok(share < 1, `L${l}: a burn alone is ${Math.round(share * 100)}% of max HP`);
+  }
 });
 
 test('BURN falls off relative to HP once past its cap', () => {

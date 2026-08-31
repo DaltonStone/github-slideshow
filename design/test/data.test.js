@@ -470,7 +470,7 @@ test('relatedMons only names real mons, never itself', () => {
     for (const rel of m.misc.relatedMons) {
       assert.ok(M.monById(rel.id), `${m.engine.name} relates to unknown id ${rel.id}`);
       assert.notEqual(rel.id, m.engine.id, `${m.engine.name} relates to itself`);
-      assert.ok(['prey', 'predator', 'rival', 'symbiont'].includes(rel.relation),
+      assert.ok(['prey', 'predator', 'rival', 'symbiont', 'leads', 'led-by'].includes(rel.relation),
         `${m.engine.name}: unknown relation ${rel.relation}`);
     }
   }

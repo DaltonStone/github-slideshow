@@ -259,11 +259,11 @@ links are real; stats, abilities, size and dex text are not authored yet.
 | 01–03 | Candelite → Lanturnn → Ebberflame | Fire | Starter |
 | 04–06 | Merling → Merful → MerKing | Water | Starter |
 | 07–09 | Bouldur → Cliffkin → Fortruss | Earth | Starter |
-| 10 | Gropper | Earth | Grasshopper with giant hind legs |
+| 10 | Gropper | Normal | Grasshopper with giant hind legs |
 | 11 | VisBee `[S]` | Earth | → VisGarde |
 | 12 | VisGarde | Earth/Dark | |
-| 13 | VisBeeQueen | Dark/Psychic | **Unresolved** — see §6.3 |
-| 14 | Stilta `[S]` | Normal | Five little guys |
+| 13 | VisBeeQueen | Dark/Psychic | Leads the VisBees — see §6.3 |
+| 14 | Stilta `[S]` | Normal | Five little guys — they do not combine |
 | 15 | Toll | Normal/Phantom | Corrupted, born from a virus |
 | 16 | Jaxs `[S]` | Dark/Phantom | Jack-In-The-Box |
 | 17 | Dusk | Dark | → DuskNoar |
@@ -281,7 +281,7 @@ links are real; stats, abilities, size and dex text are not authored yet.
 | 29 | BloomGloom | Dark/Water | → DoomBloom |
 | 30 | DoomBloom `[S]` | Dark/Water | Evil blimp |
 
-**Type spread:** Dark 8, Steel 6, Earth 4, Normal 4, Phantom 4, Water 3,
+**Type spread:** Dark 8, Steel 6, Normal 5, Phantom 4, Earth 3, Water 3,
 Psychic 3, Fire 1, Light 1, **Dragon 0**. Dragon having no creatures is
 consistent with it being rare; Dark carrying eight is the concentration to watch,
 since Dark is also the second-strongest type on the chart
@@ -289,12 +289,15 @@ since Dark is also the second-strongest type on the chart
 
 ### 6.3 VisBeeQueen
 
-VisBee → VisGarde is a normal evolution (Earth, then Earth/Dark). VisBeeQueen is
-Dark/Psychic — it **drops Earth**, which every other rule in this document
-forbids an evolution from doing, and it carries no evolution marker. It is
-recorded as a separate creature rather than a stage. With Swarm removed there is
-no caste system to belong to, so it is most likely either a **branch evolution**
-from VisBee or simply a third, related creature. Unresolved.
+**A separate creature, not a stage of the VisBee line.** That is what lets it be
+Dark/Psychic and drop the Earth the others carry — the rule that an evolution
+never loses a type stays intact.
+
+Still undecided: whether it is *reachable* from VisBee under special conditions,
+or is simply its own bee that happens to sit above them. Either way it **leads**
+the VisBees and VisGardes, which is a standing relationship rather than an
+evolution, and is recorded as such in `relatedMons` — the first real use of that
+field, alongside DrillBee preying on VisBee.
 
 ## 7. Type stat defaults
 
@@ -441,15 +444,19 @@ level, for Y turns**.
 | | |
 |---|---|
 | Damage | 5 per turn at L1, rising to **15 at L40**, flat thereafter |
-| Duration | **2–5 turns**, rolled |
+| Duration | **3–4 turns**, rolled |
 | Category | Special |
 
 Levels run to 99, so the last 59 buy no extra burn — the same shape crit uses,
 which caps at 60. Burn is an early- and mid-game threat by construction.
 
-**The duration roll swings the result more than the level scaling does.** Two
-turns versus five is 2.5× at every level, against 3× across the whole level
-range. See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §9.8.
+Duration ranges stay **narrow on purpose**. The roll is a coin flip neither
+player controls, so a wide one makes the effect swingier than any decision in
+the fight — at 2–5 turns the roll swung burn 2.5× at every level, more than the
+entire level curve. At 3–4 it is 1.33×.
+
+A full burn is worth roughly **two ordinary attacks** (2.0× at L1, 2.7× at L40,
+1.5× at L99). See [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) §9.8.
 
 ### 10.2 Terrain — PROPOSED
 

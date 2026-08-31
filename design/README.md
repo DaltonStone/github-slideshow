@@ -15,7 +15,7 @@ design/
   lib/modifiers.js     in-battle stat modifiers -- PROPOSED floor
   lib/status.js        damage-over-time and the ten terrains -- terrain PROPOSED
   lib/data.generated.js  generated from data/; do not edit
-  test/                202 tests over the rules, data, formula and mechanics
+  test/                203 tests over the rules, data, formula and mechanics
   tools/               build steps, balance analysis, dev server
 ../game/               the playable page -- see game/README.md
 ```
@@ -26,7 +26,7 @@ Node 18+, no dependencies.
 
 ```sh
 cd design
-npm test         # 202 tests
+npm test         # 203 tests
 npm run analyze  # type-chart balance and growth analysis
 npm run build    # regenerate lib/data.generated.js and game/index.html
 npm run serve    # http://localhost:8080/game/

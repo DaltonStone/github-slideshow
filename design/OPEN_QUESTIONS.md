@@ -403,23 +403,21 @@ lines. Four things in the drop contradict or leave open what is already built.
 
 The nine-type list was a typo. Phantom is the tenth type and stays in the game.
 
-### 9.2 VisBeeQueen still breaks the evolution rule
+### 9.2 VisBeeQueen — RESOLVED as a separate creature
 
-VisBee (Earth) → VisGarde (Earth/Dark) is a normal evolution. VisBeeQueen is
-**Dark/Psychic** — it drops Earth, which every other line keeps, and carries no
-evolution marker while VisGarde carries no "evolves further" marker either.
+Not a stage of the VisBee line. That keeps the evolution rule intact — nothing
+loses a type on evolving — and lets her be Dark/Psychic.
 
-The caste reading is now weaker, not stronger: **Swarm is gone** (§9.6), so
-there is no caste system for a queen to sit at the top of. That leaves two
-readings, both fine, but they need picking:
+One thread left, and it is a design choice rather than a contradiction: whether
+she is **reachable from VisBee under special conditions** or is **simply her own
+bee**. Both work. The first gives the player something to chase and makes the
+bees a three-step story; the second is cheaper and needs no new evolution rules
+at all, which matters because she would otherwise be the only conditional
+evolution in the game.
 
-- **A branch evolution from VisBee** — one creature, two possible ends. Nothing
-  else in the roster branches, so this would be a new rule, and it would be the
-  first evolution to drop a type.
-- **A third related creature** that simply happens to be a bee. Requires no new
-  rules at all, and `relatedMons` in the template already has a slot for it.
-
-Recorded as a separate creature until you say otherwise.
+Either way she **leads** the VisBees and VisGardes. That is now in `relatedMons`
+as a `leads` / `led-by` pair — the first real use of the field, along with
+DrillBee marked as VisBee's predator.
 
 ### 9.3 Dark is eight of thirty
 
@@ -427,9 +425,9 @@ Recorded as a separate creature until you say otherwise.
 |---|---|---|---|---|
 | **Dark** | **8** | | Water | 3 |
 | Steel | 6 | | Psychic | 3 |
-| Earth | 4 | | Fire | 1 |
-| Normal | 4 | | Light | 1 |
-| Phantom | 4 | | **Dragon** | **0** |
+| Normal | 5 | | Fire | 1 |
+| Phantom | 4 | | Light | 1 |
+| Earth | 3 | | **Dragon** | **0** |
 
 Dragon at zero is consistent with "rare" and is fine. **Dark at eight is the
 concentration to watch**: it is also the second-strongest type on the chart
@@ -514,47 +512,39 @@ This closes the oldest open question in the file (Swarm was named once, by
 `Royal`, and never defined) and removes the only mechanic that would have needed
 its own damage rules. Ability count 31 → 29.
 
-### 9.8 BURN's duration roll outweighs everything else about it
+### 9.8 BURN — duration narrowed to 3–4
 
-The shape is good — one curve for every damage-over-time effect, capping at L40
-the way crit caps at 60, so DoT is deliberately an early- and mid-game threat.
-Two things about the numbers are worth a look.
+**Settled.** The roll is now 3–4 turns rather than 2–5.
 
-**A long burn kills a frail creature outright at low level.** Measured against
-the level curve, as a share of a frail creature's maximum HP:
+That fixes the thing worth fixing: at 2–5 the duration swung the result **2.5×
+at every level**, against 3× across the entire level range, so a coin flip
+mattered more than 39 levels of growth. At 3–4 the roll is 1.33× and the level
+curve leads again.
 
-| Level | Tick | 2 turns | 5 turns |
-|---|---|---|---|
-| **L1** | 5 | 43% | **109%** |
-| L20 | 10 | 37% | 93% |
-| L40 | 15 | 34% | 85% |
-| L60 | 15 | 25% | 62% |
-| L99 | 15 | 16% | 40% |
+The general principle now recorded for every damage-over-time effect: **keep
+duration ranges narrow.** The roll is a coin flip neither player controls.
 
-At level 1 a five-turn burn is more than the whole health bar. Through L1–40 it
-sits at 85–109%. That is not damage over time, it is a **delayed execution** —
-and it comes from a 30% proc on a contact move, which is the starter's ability.
+What a full burn is now worth, measured against simply attacking:
 
-Against a bulky creature it is gentler but still large: 26–69% through L40.
+| Level | 3 turns | 4 turns | One ordinary hit | Worst burn, in hits |
+|---|---|---|---|---|
+| L1 | 65% | 87% | 43% | 2.0× |
+| L20 | 56% | 74% | 30% | 2.5× |
+| L40 | 51% | 68% | 25% | **2.7×** |
+| L99 | 24% | 32% | 22% | 1.5× |
 
-**The duration roll matters more than 39 levels of growth.** Two turns versus
-five is **2.5×** at every level, while the whole level range is 3×. So the
-biggest single factor in how much a burn hurts is a coin flip, not the
-creature, the level, or anything either player decided.
+*(shares of a frail creature's maximum HP)*
 
-Three ways to pull it in, none of which need the shape to change:
+So a burn is roughly **two free attacks**, peaking near 2.7 around L40 and
+falling off after the cap. That is strong for a 30% proc but defensible — it is
+random, it is beatable by healing, and the Fire starter's whole identity rests
+on it. A test pins it between one and three hits, so a retune has to stay in
+that band.
 
-1. **Narrow the duration** to 3–4 turns. The swing drops from 2.5× to 1.33× and
-   burn becomes a number you can plan around.
-2. **Scale damage by the target's max HP** rather than a flat amount, so a
-   frail creature is not disproportionately executed by it.
-3. **Leave it, and make the 30% proc the tuning knob** — a coin flip that only
-   fires 30% of the time is a different proposition. But then the *other* DoT
-   effects using this shape all inherit the swing.
-
-Also unanswered: whether the per-turn damage is reduced by S.DEF or is flat
-("special damage" may only mean "not physical"), whether re-applying refreshes
-or stacks, and whether a burn tick can be the thing that knocks a creature out.
+Three smaller things still unanswered: whether the per-turn damage is reduced by
+S.DEF or is flat ("special damage" may only mean "not physical"), whether
+re-applying refreshes or stacks, and whether a burn tick can be the blow that
+knocks a creature out.
 
 ### 9.9 Terrain — the principle is strong, the gap is who sets it
 

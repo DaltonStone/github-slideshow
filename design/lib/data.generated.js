@@ -737,7 +737,7 @@ export const monData = {
       "engine": {
         "id": 10,
         "name": "Gropper",
-        "type1": "Earth",
+        "type1": "Normal",
         "type2": null,
         "origin": "Natural",
         "body": "Grasshopper-like, with giant hind legs.",
@@ -760,7 +760,7 @@ export const monData = {
           "kind": "birth-group",
           "value": null
         },
-        "evolutionNotes": null
+        "evolutionNotes": "Retyped from Earth to Normal. A grasshopper built around giant hind legs reads as mobility, which fits Normal's wide access better than Earth's slow, low-kill-power default."
       },
       "misc": {
         "genderRatio": null,
@@ -805,7 +805,16 @@ export const monData = {
       "misc": {
         "genderRatio": null,
         "castes": null,
-        "relatedMons": []
+        "relatedMons": [
+          {
+            "id": 13,
+            "relation": "led-by"
+          },
+          {
+            "id": 20,
+            "relation": "predator"
+          }
+        ]
       },
       "status": "concept"
     },
@@ -845,7 +854,12 @@ export const monData = {
       "misc": {
         "genderRatio": null,
         "castes": null,
-        "relatedMons": []
+        "relatedMons": [
+          {
+            "id": 13,
+            "relation": "led-by"
+          }
+        ]
       },
       "status": "concept"
     },
@@ -876,12 +890,21 @@ export const monData = {
           "kind": "manifest-condition",
           "value": null
         },
-        "evolutionNotes": "UNRESOLVED: not marked as an evolution, and its typing drops the Earth the rest of the line carries. Likely a caste rather than a stage."
+        "evolutionNotes": "A separate creature, not a stage of the VisBee line -- which is why it can be Dark/Psychic and drop the Earth the others carry. Still undecided whether it is reachable from VisBee under special conditions or is simply its own bee. Either way it LEADS the VisBees and VisGardes, which is a standing relationship rather than an evolution."
       },
       "misc": {
         "genderRatio": null,
         "castes": null,
-        "relatedMons": []
+        "relatedMons": [
+          {
+            "id": 11,
+            "relation": "leads"
+          },
+          {
+            "id": 12,
+            "relation": "leads"
+          }
+        ]
       },
       "status": "concept"
     },
@@ -892,7 +915,7 @@ export const monData = {
         "type1": "Normal",
         "type2": null,
         "origin": "Natural",
-        "body": "A group of five little guys.",
+        "body": "Five little guys, acting together. They do not combine into anything.",
         "height": null,
         "weight": null,
         "stage": null,
@@ -912,7 +935,7 @@ export const monData = {
           "kind": "birth-group",
           "value": null
         },
-        "evolutionNotes": null
+        "evolutionNotes": "The five are flavour and staging, not a merge -- Stilta never becomes one larger creature. With Swarm gone they share one HP pool like everything else."
       },
       "misc": {
         "genderRatio": null,
@@ -1141,7 +1164,12 @@ export const monData = {
       "misc": {
         "genderRatio": null,
         "castes": null,
-        "relatedMons": []
+        "relatedMons": [
+          {
+            "id": 11,
+            "relation": "prey"
+          }
+        ]
       },
       "status": "concept"
     },
@@ -1871,15 +1899,17 @@ export const mechanicsData = {
         "minDamage": 5,
         "maxDamage": 15,
         "capLevel": 40,
-        "minTurns": 2,
-        "maxTurns": 5,
-        "$note": "Applied by Aspect of Flame's contact moves at 30%. Fireproof grants immunity."
+        "minTurns": 3,
+        "maxTurns": 4,
+        "$note": "Applied by Aspect of Flame's contact moves at 30%. Fireproof grants immunity.",
+        "$durationNote": "Narrowed from 2-5. At 2-5 the duration roll swung the result 2.5x at every level, which was a bigger factor than 39 levels of growth; 3-4 makes it 1.33x."
       }
     ],
     "openRules": [
       "Is the per-turn damage reduced by S.DEF, or is 'special damage' only saying it is not physical? Flat is assumed here.",
       "Does re-applying BURN refresh the duration, stack a second instance, or do nothing?",
       "Does the damage tick at end of turn, and can it knock a creature out?"
-    ]
+    ],
+    "$durationNote": "Duration ranges should stay narrow. The roll is a coin flip neither player controls, so a wide one makes the effect swingier than any decision in the fight."
   }
 };
